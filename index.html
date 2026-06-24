@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Lab</title>
+    <link rel="stylesheet" href="estetica/loading.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="loader">
+        <!-- sfondo animato -->
+        <div class="bg-orb orb-1"></div>
+        <div class="bg-orb orb-2"></div>
+        <div class="bg-orb orb-3"></div>
+        <div class="bg-grain"></div>
+
+        <div class="center">
+            <!-- logo cerchiato -->
+            <div class="logo-ring">
+                <div class="ring-spin"></div>
+                <img class="logo" src="https://media.discordapp.net/attachments/1356283766942863453/1518320595459379412/Core_Lab_1.png?ex=6a3b77fe&is=6a3a267e&hm=0d28c1f34d07f11e4fe8f3d3ab49758d75a74661e4ae5cad7857850354e46181&=&format=webp&quality=lossless&width=450&height=450" alt="Logo">
+            </div>
+
+            <div class="title">Core Lab</div>
+            <div class="sub">roblox</div>
+
+            <div class="bar-track">
+                <div class="bar-glow" id="barGlow"></div>
+                <div class="bar-fill" id="bar"></div>
+            </div>
+
+            <div class="row">
+                <span id="pct">0%</span>
+                <span id="msg">connessione...</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="script/loading.js"></script>
+</body>
+</html>
