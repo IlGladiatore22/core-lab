@@ -14,10 +14,7 @@ app.use(express.static(path.join(__dirname)));
 const DISCORD_CLIENT_ID     = '1518326560321573156';
 const DISCORD_CLIENT_SECRET = 'TbXZiKc3IB875PgcCwONjW77c_l47UqK';
 const DISCORD_BOT_TOKEN      = 'MTUxODMyNjU2MDMyMTU3MzE1Ng.G8k5ld.tXw81nKXTjtTZzkOc_i9kvOJ0CzLvQe2dUyWqI';
-
-// >>> LINK RENDER ESATTO <<<
 const REDIRECT_URI          = 'https://core-lab.onrender.com/callback';
-
 const JSONBIN_ID            = '6a3ad2d7da38895dfef34b4c';
 const JSONBIN_KEY           = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 const DISCORD_GUILD_ID      = '1518317193698218035';
@@ -80,7 +77,7 @@ app.get('/callback', async (req, res) => {
                 client_secret: DISCORD_CLIENT_SECRET,
                 grant_type: 'authorization_code',
                 code: code,
-                redirect_uri: REDIRECT_URI // Usa la variabile corretta
+                redirect_uri: REDIRECT_URI
             }),
             { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
         );
@@ -133,8 +130,8 @@ app.get('/callback', async (req, res) => {
 
         res.cookie('corelab_uid', u.id, { maxAge: 7*24*60*60*1000, path: '/', sameSite: 'Lax' });
         
-        // >>> TI RIMANDA AL TUO SITO GITHUB PAGES DOPO IL LOGIN <<<
-        res.redirect('https://ilgladiatore22.github.io/core-lab/index.html');
+        // RIMANDA AL SITO GITHUB PAGES CON L'ID UTENTE
+        res.redirect('https://ilgladiatore22.github.io/core-lab/index.html?uid=' + u.id);
 
     } catch (err) {
         console.error('Errore OAuth:', err.response ? err.response.data : err.message);
@@ -172,7 +169,7 @@ app.get('/logout', (req, res) => {
 });
 
 
-// >>> PORTA DINAMICA PER RENDER <<<
+// PORTA DINAMICA PER RENDER
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log('Server avviato sulla porta ' + PORT);
