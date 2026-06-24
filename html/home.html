@@ -140,32 +140,11 @@
                 <a href="recensioni.html">Recensioni</a>
             </div>
             <div class="footer-right">
-                <span>© 2026 Core Lab</span>
+                <span>© 2025 Core Lab</span>
             </div>
         </div>
     </footer>
 
-    <!-- Intercetta il login da Render e salva i dati prima di caricare il sito -->
-    <script>
-        (function() {
-            var p = new URLSearchParams(window.location.search);
-            var uid = p.get('uid');
-            if (uid) {
-                fetch('https://api.jsonbin.io/v3/b/6a3ad2d7da38895dfef34b4c/latest', {
-                    headers: { 'X-Master-Key': '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S' }
-                }).then(function(r) { return r.json(); }).then(function(data) {
-                    var user = data.record.users.find(function(u) { return u.id === uid; });
-                    if (user) localStorage.setItem('corelab_user', JSON.stringify(user));
-                    // Pulisce l'URL rimuovendo il ?uid=...
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                    // Ricarica la pagina per far partire il sito con i dati nuovi
-                    location.reload();
-                }).catch(function() {
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                });
-            }
-        })();
-    </script>
     <script src="../script/home.js"></script>
 </body>
 </html>
