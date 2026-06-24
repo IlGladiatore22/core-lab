@@ -28,12 +28,7 @@
 
             <div class="error-msg" id="errorMsg" style="display:none;">
                 <i class="fa-solid fa-circle-exclamation"></i>
-                <span id="errorText">Errore durante il login. Riprova.</span>
-            </div>
-
-            <div class="discord-btn" id="loadingBtn" style="display:none; pointer-events:none; opacity:0.7;">
-                <i class="fa-solid fa-spinner fa-spin"></i>
-                Accesso in corso...
+                <span>Errore durante il login. Riprova.</span>
             </div>
 
             <a href="#" class="discord-btn" id="discordLogin">
@@ -46,19 +41,7 @@
     </div>
 
     <script>
-        var errorMsg = document.getElementById('errorMsg');
-        var errorText = document.getElementById('errorText');
-        var loginBtn = document.getElementById('discordLogin');
-        var loadingBtn = document.getElementById('loadingBtn');
-
-        function showError(msg) {
-            loginBtn.style.display = 'flex';
-            loadingBtn.style.display = 'none';
-            errorText.textContent = msg;
-            errorMsg.style.display = 'flex';
-        }
-
-        // 1. Se già loggato, vai alla home
+        // 1. Se l'utente è già loggato, mandalo alla home
         try {
             var u = JSON.parse(localStorage.getItem('corelab_user'));
             if (u && u.id) {
@@ -67,112 +50,22 @@
             }
         } catch(e) { if(e.message === 'exit') throw e; }
 
-        // 2. Funzioni crittografiche per la sicurezza (Obbligatorie per GitHub Pages)
-        function generateRandomString(length) {
-            var text = '';
-            var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            for (var i = 0; i < length; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
-            return text;
+        // 2. Se c'è un errore nell'URL
+        if (window.location.search.includes('error=1')) {
+            document.getElementById('errorMsg').style.display = 'flex';
         }
 
-        async function sha256(plain) {
-            var encoder = new TextEncoder();
-            var data = encoder.encode(plain);
-            return window.crypto.subtle.digest('SHA-256', data);
-        }
+        // 3. Genera il link per il login verso IL TUO SERVER RENDER
+        var params = new URLSearchParams({
+            client_id: '1518326560321573156',
+            // >>> METTI QUI IL TUO LINK ESATTO DI RENDER SOTTO <<<
+            redirect_uri: 'https://core-lab.onrender.com/callback',
+            response_type: 'code',
+            scope: 'identify'
+        });
 
-        function base64urlencode(str) {
-            return btoa(String.fromCharCode.apply(null, new Uint8Array(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        }
-
-        async function generateCodeChallenge(verifier) {
-            var hashed = await sha256(verifier);
-            return base64urlencode(hashed);
-        }
-
-        // 3. Logica
-        (async function() {
-            // Controlla se Discord ci ha rimandato indietro con un "code"
-            var urlParams = new URLSearchParams(window.location.search);
-            var code = urlParams.get('code');
-
-            if (code) {
-                loginBtn.style.display = 'none';
-                loadingBtn.style.display = 'flex';
-
-                var verifier = localStorage.getItem('discord_pkce_verifier');
-                if (!verifier) {
-                    showError('Errore di sicurezza. Ricarica la pagina e riprova.');
-                    return;
-                }
-
-                try {
-                    // Scambia il "code" con il vero "access_token" direttamente dal browser
-                    var tokenRes = await fetch('https://discord.com/api/oauth2/token', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({
-                            client_id: '1518326560321573156',
-                            grant_type: 'authorization_code',
-                            code: code,
-                            redirect_uri: window.location.origin + window.location.pathname,
-                            code_verifier: verifier
-                        })
-                    });
-
-                    var tokenData = await tokenRes.json();
-                    var accessToken = tokenData.access_token;
-
-                    if (!accessToken) throw new Error('No token');
-
-                    // Chiediamo a Discord chi è l'utente
-                    var userRes = await fetch('https://discord.com/api/users/@me', {
-                        headers: { 'Authorization': 'Bearer ' + accessToken }
-                    });
-                    var user = await userRes.json();
-
-                    if (user.id) {
-                        var avatarUrl = user.avatar 
-                            ? 'https://cdn.discordapp.com/avatars/' + user.id + '/' + user.avatar + '.png' 
-                            : 'https://cdn.discordapp.com/embed/avatars/0.png';
-
-                        var userData = {
-                            id: user.id,
-                            username: user.username,
-                            globalName: user.global_name || user.username,
-                            avatar: avatarUrl,
-                            firstLogin: Date.now(),
-                            lastLogin: Date.now(),
-                            purchases: 0
-                        };
-
-                        localStorage.setItem('corelab_user', JSON.stringify(userData));
-                        window.location.href = '../index.html';
-                    } else {
-                        throw new Error('No user ID');
-                    }
-                } catch(err) {
-                    showError('Errore di connessione con Discord.');
-                }
-            } 
-            // Se non c'è nessun "code", prepara il link per il login
-            else {
-                var verifier = generateRandomString(128);
-                localStorage.setItem('discord_pkce_verifier', verifier);
-                var challenge = await generateCodeChallenge(verifier);
-
-                var discordParams = new URLSearchParams({
-                    client_id: '1518326560321573156',
-                    redirect_uri: window.location.origin + window.location.pathname,
-                    response_type: 'code',
-                    scope: 'identify',
-                    code_challenge: challenge,
-                    code_challenge_method: 'S256'
-                });
-
-                loginBtn.href = 'https://discord.com/api/oauth2/authorize?' + discordParams.toString();
-            }
-        })();
+        document.getElementById('discordLogin').href = 
+            'https://discord.com/api/oauth2/authorize?' + params.toString();
     </script>
 </body>
 </html>
