@@ -188,6 +188,7 @@ app.get('/logout', (req, res) => {
 });
 
 
-app.listen(3000, () => {
-    console.log('Server avviato su http://localhost:3000');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log('Server avviato sulla porta ' + PORT);
 });
