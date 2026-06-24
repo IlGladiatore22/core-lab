@@ -21,7 +21,7 @@
             <!-- logo cerchiato -->
             <div class="logo-ring">
                 <div class="ring-spin"></div>
-                <img class="logo" src="https://media.discordapp.net/attachments/1356283766942863453/1518320595459379412/Core_Lab_1.png?ex=6a3b77fe&is=6a3a267e&hm=0d28c1f34d07f11e4fe8f3d3ab49758d75a74661e4ae5cad7857850354e46181&=&format=webp&quality=lossless&width=450&height=450" alt="Logo">
+                <img class="logo" src="https://media.discordapp.net/attachments/1356283766942863453/1518320595459379412/Core_Lab_1.png?ex=6a3b77fe&is=6a3a267e&hm=0d28c1f34d07f11e4fe8f3d3ab49758d75a74661e4ae5cad7850354e46181&=&format=webp&quality=lossless&width=450&height=450" alt="Logo">
             </div>
 
             <h1>Core Lab</h1>
@@ -30,7 +30,13 @@
             <!-- errore -->
             <div class="error-msg" id="errorMsg" style="display:none;">
                 <i class="fa-solid fa-circle-exclamation"></i>
-                <span>Errore durante il login. Riprova.</span>
+                <span id="errorText">Errore durante il login. Riprova.</span>
+            </div>
+
+            <!-- caricamento -->
+            <div class="discord-btn" id="loadingBtn" style="display:none; pointer-events:none; opacity:0.7;">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                Accesso in corso...
             </div>
 
             <!-- bottone discord -->
@@ -44,21 +50,89 @@
     </div>
 
     <script>
-        // legge l'errore dall'URL
-        if (window.location.search.includes('error=1')) {
-            document.getElementById('errorMsg').style.display = 'flex';
+        // 1. Se l'utente è già loggato, mandalo alla home
+        try {
+            var u = JSON.parse(localStorage.getItem('corelab_user'));
+            if (u && u.id) {
+                window.location.replace('home.html');
+                throw new Error('exit'); // ferma lo script
+            }
+        } catch(e) { if(e.message === 'exit') throw e; }
+
+        var errorMsg = document.getElementById('errorMsg');
+        var errorText = document.getElementById('errorText');
+        var loginBtn = document.getElementById('discordLogin');
+        var loadingBtn = document.getElementById('loadingBtn');
+
+        // 2. Se Discord ci ha appena rimandato indietro con il token
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+            // Nascondi bottone e mostra caricamento
+            loginBtn.style.display = 'none';
+            loadingBtn.style.display = 'flex';
+
+            // Pulisci l'URL (per sicurezza non lasciamo il token visibile nella barra)
+            history.replaceState(null, '', window.location.pathname);
+
+            var hash = window.location.hash.substring(1);
+            var params = new URLSearchParams(hash);
+            var accessToken = params.get('access_token');
+            var error = params.get('error');
+
+            if (error) {
+                loginBtn.style.display = 'flex';
+                loadingBtn.style.display = 'none';
+                errorText.textContent = 'Accesso negato. Riprova.';
+                errorMsg.style.display = 'flex';
+            } else if (accessToken) {
+                // Chiediamo a Discord i dati dell'utente direttamente dal browser
+                fetch('https://discord.com/api/users/@me', {
+                    headers: { 'Authorization': 'Bearer ' + accessToken }
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(user) {
+                    if (user.id) {
+                        // Crea l'URL dell'avatar
+                        var avatarUrl = user.avatar 
+                            ? 'https://cdn.discordapp.com/avatars/' + user.id + '/' + user.avatar + '.png' 
+                            : 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+                        // Salva i dati nell'localStorage
+                        var userData = {
+                            id: user.id,
+                            username: user.username,
+                            globalName: user.global_name || user.username,
+                            avatar: avatarUrl,
+                            firstLogin: Date.now(),
+                            lastLogin: Date.now(),
+                            purchases: 0
+                        };
+
+                        localStorage.setItem('corelab_user', JSON.stringify(userData));
+
+                        // Manda alla home
+                        window.location.href = 'home.html';
+                    } else {
+                        throw new Error('No user ID');
+                    }
+                })
+                .catch(function(err) {
+                    loginBtn.style.display = 'flex';
+                    loadingBtn.style.display = 'none';
+                    errorText.textContent = 'Errore di connessione con Discord.';
+                    errorMsg.style.display = 'flex';
+                });
+            }
+        } else {
+            // 3. Genera il link per il login (NOTA: usiamo 'token' invece di 'code')
+            var discordParams = new URLSearchParams({
+                client_id: '1518326560321573156',
+                redirect_uri: window.location.origin + window.location.pathname,
+                response_type: 'token', 
+                scope: 'identify'
+            });
+
+            loginBtn.href = 'https://discord.com/api/oauth2/authorize?' + discordParams.toString();
         }
-
-        // costruisce l'URL di autorizzazione Discord
-        var params = new URLSearchParams({
-            client_id: '1518326560321573156',
-            https://core-lab-abc.onrender.com/callback
-            response_type: 'code',
-            scope: 'identify'
-        });
-
-        document.getElementById('discordLogin').href =
-            'https://discord.com/api/oauth2/authorize?' + params.toString();
     </script>
 </body>
 </html>
