@@ -1,0 +1,180 @@
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #06050b;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* sfondo */
+.bg-scene {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.bg-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    will-change: transform;
+}
+
+.o1 { width:500px; height:500px; background:#7c3aed; opacity:.15; top:-15%; right:-10%; animation:d1 20s ease-in-out infinite alternate; }
+.o2 { width:400px; height:400px; background:#6d28d9; opacity:.12; bottom:-10%; left:-8%; animation:d2 25s ease-in-out infinite alternate; }
+.o3 { width:280px; height:280px; background:#8b5cf6; opacity:.06; top:45%; left:45%; animation:d3 10s ease-in-out infinite; }
+
+@keyframes d1 { to { transform: translate(-100px,80px) scale(1.2); } }
+@keyframes d2 { to { transform: translate(80px,-60px) scale(1.15); } }
+@keyframes d3 { 0%,100% { transform:scale(1); opacity:.06; } 50% { transform:scale(1.4); opacity:.12; } }
+
+.bg-grain {
+    position: absolute;
+    inset: 0;
+    opacity: .025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 128px;
+}
+
+/* card */
+.login-wrap {
+    position: relative;
+    z-index: 1;
+    animation: fadeUp .8s ease both;
+}
+
+@keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+.login-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    background: rgba(14,13,22,.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(139,92,246,.08);
+    border-radius: 24px;
+    padding: 48px 40px;
+    min-width: 340px;
+}
+
+/* logo */
+.logo-ring {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.ring-spin {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(139,92,246,.2);
+    animation: spin 12s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.logo-ring::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(139,92,246,.05);
+    border: 1px solid rgba(139,92,246,.1);
+}
+
+.logo {
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    object-fit: cover;
+    position: relative;
+    z-index: 1;
+}
+
+.login-card h1 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #f1eff8;
+    letter-spacing: -.02em;
+}
+
+.sub {
+    font-size: .78rem;
+    color: rgba(232,230,240,.35);
+    margin-bottom: 8px;
+}
+
+/* errore */
+.error-msg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(239,68,68,.08);
+    border: 1px solid rgba(239,68,68,.15);
+    border-radius: 10px;
+    padding: 10px 16px;
+    width: 100%;
+    font-size: .72rem;
+    color: #f87171;
+}
+
+.error-msg i { flex-shrink: 0; }
+
+/* bottone discord */
+.discord-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 24px;
+    background: #5865F2;
+    color: #fff;
+    border-radius: 12px;
+    font-size: .88rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    transition: background .2s, transform .15s, box-shadow .2s;
+    box-shadow: 0 4px 24px rgba(88,101,242,.25);
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.discord-btn:hover {
+    background: #4752c4;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 30px rgba(88,101,242,.35);
+}
+
+.discord-btn:active { transform: translateY(0); }
+
+.terms {
+    font-size: .6rem;
+    color: rgba(232,230,240,.2);
+    margin-top: 4px;
+}
+
+@media (max-width: 480px) {
+    .login-card {
+        min-width: auto;
+        margin: 0 20px;
+        padding: 36px 24px;
+    }
+}

@@ -1,0 +1,241 @@
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #06050b;
+    overflow: hidden;
+    height: 100vh;
+}
+
+#loader {
+    position: fixed;
+    inset: 0;
+    background: #06050b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity .7s ease, transform .7s ease;
+}
+
+#loader.out {
+    opacity: 0;
+    transform: scale(1.03);
+    pointer-events: none;
+}
+
+/* ===== SFONDO ANIMATO ===== */
+
+/* orb morbide che si muovono piano */
+.bg-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: .35;
+    will-change: transform;
+}
+
+.orb-1 {
+    width: 400px;
+    height: 400px;
+    background: #7c3aed;
+    top: -10%;
+    right: -5%;
+    animation: drift1 18s ease-in-out infinite alternate;
+}
+
+.orb-2 {
+    width: 350px;
+    height: 350px;
+    background: #6d28d9;
+    bottom: -15%;
+    left: -8%;
+    animation: drift2 22s ease-in-out infinite alternate;
+}
+
+.orb-3 {
+    width: 250px;
+    height: 250px;
+    background: #8b5cf6;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: .12;
+    animation: pulse3 8s ease-in-out infinite;
+}
+
+@keyframes drift1 {
+    0%   { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-80px, 60px) scale(1.15); }
+}
+
+@keyframes drift2 {
+    0%   { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(60px, -50px) scale(1.1); }
+}
+
+@keyframes pulse3 {
+    0%, 100% { opacity: .08; transform: translate(-50%, -50%) scale(1); }
+    50%      { opacity: .2;  transform: translate(-50%, -50%) scale(1.3); }
+}
+
+/* grana sottile sopra tutto */
+.bg-grain {
+    position: absolute;
+    inset: 0;
+    opacity: .03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 128px 128px;
+    pointer-events: none;
+}
+
+/* ===== CONTENUTO ===== */
+.center {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+}
+
+/* ===== LOGO CERCHIATO ===== */
+.logo-ring {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeDown .8s ease both;
+}
+
+/* bordo tratteggiato che gira */
+.ring-spin {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(139,92,246,.25);
+    animation: spin 12s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* cerchio di sfondo del logo */
+.logo-ring::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(139,92,246,.06);
+    border: 1px solid rgba(139,92,246,.12);
+}
+
+/* glow sotto il cerchio */
+.logo-ring::after {
+    content: '';
+    position: absolute;
+    bottom: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 20px;
+    background: radial-gradient(ellipse, rgba(139,92,246,.25) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(4px);
+}
+
+.logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes fadeDown {
+    from { opacity:0; transform:translateY(-14px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+/* ===== TESTI ===== */
+.title {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: #f1eff8;
+    letter-spacing: -.02em;
+    animation: fadeDown .8s .12s ease both;
+}
+
+.sub {
+    font-size: .6rem;
+    font-weight: 600;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: rgba(139,92,246,.45);
+    margin-top: -10px;
+    animation: fadeDown .8s .22s ease both;
+}
+
+/* ===== BARRA ===== */
+.bar-track {
+    width: 200px;
+    height: 3px;
+    background: rgba(139,92,246,.06);
+    border-radius: 3px;
+    margin-top: 22px;
+    position: relative;
+    overflow: visible;
+    animation: fadeDown .8s .32s ease both;
+}
+
+/* punto luminoso che c'è anche a 0% */
+.bar-glow {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background: #a78bfa;
+    border-radius: 50%;
+    box-shadow: 0 0 12px 3px rgba(139,92,246,.5);
+    transition: left .3s ease;
+}
+
+.bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #7c3aed, #a78bfa);
+    border-radius: 3px;
+    transition: width .3s ease;
+}
+
+/* ===== RIGA INFO ===== */
+.row {
+    width: 200px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: fadeDown .8s .42s ease both;
+}
+
+#pct {
+    font-size: .72rem;
+    font-weight: 600;
+    color: #c4b5fd;
+    font-variant-numeric: tabular-nums;
+}
+
+#msg {
+    font-size: .62rem;
+    font-weight: 500;
+    color: rgba(167,139,250,.3);
+    text-transform: lowercase;
+}
