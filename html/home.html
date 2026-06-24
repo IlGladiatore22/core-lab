@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Lab — Home</title>
+    <link rel="stylesheet" href="../estetica/home.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+    <nav>
+        <div class="nav-inner">
+            <a href="home.html" class="nav-logo">
+                <img src="https://media.discordapp.net/attachments/1356283766942863453/1518320595459379412/Core_Lab_1.png?ex=6a3b77fe&is=6a3a267e&hm=0d28c1f34d07f11e4fe8f3d3ab49758d75a74661e4ae5cad7857850354e46181&=&format=webp&quality=lossless&width=450&height=450" alt="Logo" class="nav-logo-img">
+                <span>Core Lab</span>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="home.html" class="active"><i class="fa-solid fa-house"></i> Home</a>
+                <a href="prodotti.html"><i class="fa-solid fa-box"></i> Prodotti</a>
+                <a href="developer.html"><i class="fa-solid fa-code"></i> Developer</a>
+                <a href="recensioni.html"><i class="fa-solid fa-star"></i> Recensioni</a>
+                <a href="assistenza.html"><i class="fa-solid fa-headset"></i> Assistenza</a>
+            </div>
+            <div class="nav-right">
+                <div class="nav-user" id="navUser" style="display:none;">
+                    <img class="nav-avatar" id="navAvatar" src="" alt="">
+                    <span class="nav-username" id="navUsername"></span>
+                </div>
+                <button class="nav-logout" id="logoutBtn" style="display:none;" title="Logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+                <button class="nav-burger" id="burger">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-user" id="mobileUser" style="display:none;">
+            <img class="mobile-avatar" id="mobileAvatar" src="" alt="">
+            <span id="mobileUsername"></span>
+        </div>
+        <a href="home.html"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="prodotti.html"><i class="fa-solid fa-box"></i> Prodotti</a>
+        <a href="developer.html"><i class="fa-solid fa-code"></i> Developer</a>
+        <a href="recensioni.html"><i class="fa-solid fa-star"></i> Recensioni</a>
+        <a href="assistenza.html"><i class="fa-solid fa-headset"></i> Assistenza</a>
+        <a href="/logout" id="mobileLogout" style="display:none;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </div>
+
+    <div class="bg-scene">
+        <div class="bg-orb o1"></div>
+        <div class="bg-orb o2"></div>
+        <div class="bg-orb o3"></div>
+        <div class="bg-grain"></div>
+    </div>
+
+    <header class="hero">
+        <div class="hero-inner">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                online ora
+            </div>
+
+            <div class="hero-user">
+                <img class="hero-avatar" id="heroAvatar" src="" alt="">
+                <h1>Benvenuto, <span class="v" id="heroName">—</span></h1>
+            </div>
+
+            <p class="hero-desc" id="heroDesc">Prodotti per Roblox, fatti bene. Niente scam, niente cazzate.</p>
+
+            <div class="stats-bin">
+                <div class="stat-block">
+                    <div class="stat-num"><span class="num" id="statUsers">0</span></div>
+                    <div class="stat-label">utenti registrati</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-block">
+                    <div class="stat-num"><span class="num" id="statOnline">0</span></div>
+                    <div class="stat-label">online adesso</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-block">
+                    <div class="stat-num"><span class="num" id="statSales">0</span></div>
+                    <div class="stat-label">prodotti venduti</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-block">
+                    <div class="stat-num"><span class="num" id="statReviews">0</span></div>
+                    <div class="stat-label">recensioni</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="info">
+        <div class="sec-inner">
+            <div class="sec-head">
+                <h2>Cosa offriamo</h2>
+                <p>Tutto quello che ti serve, in un posto solo</p>
+            </div>
+            <div class="info-grid">
+                <div class="info-card scroll-in">
+                    <div class="info-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h3>Sicuro</h3>
+                    <p>Script testati e sicuri. Nessun rischio per il tuo account.</p>
+                </div>
+                <div class="info-card scroll-in">
+                    <div class="info-icon"><i class="fa-solid fa-rotate"></i></div>
+                    <h3>Aggiornato</h3>
+                    <p>Aggiorniamo entro poche ore dopo ogni patch di Roblox.</p>
+                </div>
+                <div class="info-card scroll-in">
+                    <div class="info-icon"><i class="fa-solid fa-headset"></i></div>
+                    <h3>Supporto</h3>
+                    <p>Apri un ticket su Discord, rispondiamo in pochi minuti.</p>
+                </div>
+                <div class="info-card scroll-in">
+                    <div class="info-icon"><i class="fa-solid fa-bolt"></i></div>
+                    <h3>Veloce</h3>
+                    <p>Acquista, scarica, usa. Tutto in meno di un minuto.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-left">
+                <img src="https://media.discordapp.net/attachments/1356283766942863453/1518320595459379412/Core_Lab_1.png?ex=6a3b77fe&is=6a3a267e&hm=0d28c1f34d07f11e4fe8f3d3ab49758d75a74661e4ae5cad7857850354e46181&=&format=webp&quality=lossless&width=450&height=450" alt="Logo" class="footer-logo-img">
+                <span>Core Lab</span>
+            </div>
+            <div class="footer-mid">
+                <a href="home.html">Home</a>
+                <a href="prodotti.html">Prodotti</a>
+                <a href="developer.html">Developer</a>
+                <a href="recensioni.html">Recensioni</a>
+            </div>
+            <div class="footer-right">
+                <span>© 2026 Core Lab</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../script/home.js"></script>
+</body>
+</html>
