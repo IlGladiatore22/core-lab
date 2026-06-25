@@ -1147,4 +1147,28 @@ nav {
     font-size: .5rem !important;
 }
 
+/* ===== BOTTONE AGGIUNGI AL CARRELLO ===== */
+.btn-cart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    background: rgba(139, 92, 246, 0.1);
+    color: #a78bfa;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
 
+.btn-cart:hover {
+    background: rgba(139, 92, 246, 0.25);
+    border-color: rgba(139, 92, 246, 0.5);
+    color: #c4b5fd;
+    transform: translateY(-2px);
+}
