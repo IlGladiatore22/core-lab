@@ -1,9 +1,9 @@
 var BIN_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
-// >>> IL NUOVO BIN DOVE IL BOT SALVA LE RECENSIONI <<<
+// Il nuovo bin dove il bot Discord salva le recensioni
 var REVIEWS_BIN_URL = 'https://api.jsonbin.io/v3/b/6a3b343bda38895dfef4de16/latest';
 
-// Il vecchio bin principale (serve solo per login/admin)
+// Il bin principale (serve per login/admin)
 var MAIN_BIN_URL = 'https://api.jsonbin.io/v3/b/6a3ad2d7da38895dfef34b4c/latest';
 
 
@@ -137,11 +137,10 @@ function starsHtml(rating) {
 }
 
 
-// ===== CARICA RECENSIONI (DAL NUOVO BIN) =====
+// ===== CARICA RECENSIONI =====
 async function loadReviews() {
     var grid = document.getElementById('reviewsGrid');
     try {
-        // Legge dal bin dedicato alle recensioni
         var res = await fetch(REVIEWS_BIN_URL, { headers: { 'X-Master-Key': BIN_KEY } });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         var data = (await res.json()).record;
@@ -155,15 +154,13 @@ async function loadReviews() {
         grid.innerHTML = '';
 
         reviews.forEach(function(rev, i) {
-            // TRADUCE i dati del bot Discord nel formato del sito
             var cardUsername = rev.username || 'Utente';
             var cardAvatar = rev.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
-            var cardRating = rev.stars || 0; // Il bot salva "stars", il sito usa "rating"
+            var cardRating = rev.stars || 0; 
             
-            // Il bot salva "product", lo mostriamo come testo della recensione
             var cardText = 'Prodotto: ' + esc(rev.product || 'N/A');
             if (rev.price) {
-                cardText += ' | Prezzo: ' + esc(rev.price);
+                cardText += ' • Prezzo: ' + esc(rev.price);
             }
 
             var card = document.createElement('div');
@@ -173,12 +170,12 @@ async function loadReviews() {
             card.innerHTML =
                 '<div class="review-card-top">' +
                     '<img class="review-card-avatar" src="' + esc(cardAvatar) + '" alt="" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'">' +
-                    '<div>' +
+                    '<div class="review-card-info">' +
                         '<div class="review-card-name">' + esc(cardUsername) + '</div>' +
                         '<div class="review-card-stars">' + starsHtml(cardRating) + '</div>' +
                     '</div>' +
                 '</div>' +
-                '<div class="review-card-text">' + cardText + '</div>';
+                '<div class="review-card-bottom">' + cardText + '</div>';
 
             grid.appendChild(card);
         });
