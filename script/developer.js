@@ -119,15 +119,16 @@ function esc(s) { var d = document.createElement('div'); d.textContent = s||''; 
 
 
 // ===== CARICA DEVELOPERS =====
+// developer.js — Solo logica pagina team developer
+
 async function loadDevelopers() {
     var grid = document.getElementById('devGrid');
     try {
-        var res = await fetch(BIN_URL, { headers: { 'X-Master-Key': API_KEY } });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        mainData = (await res.json()).record;
+        var data = await loadMainData();
+        if (!data) throw new Error('Errore caricamento');
         
-        var devs = mainData.developers || [];
-        var reviews = mainData.reviews || []; // Prende tutte le recensioni
+        var devs = data.developers || [];
+        var reviews = data.reviews || []; 
 
         if (!devs.length) {
             grid.innerHTML = '<div class="recent-empty"><i class="fa-solid fa-user-slash" style="display:block;font-size:1.4rem;margin-bottom:10px;opacity:.4;"></i>Nessun developer nel team</div>';
@@ -141,23 +142,13 @@ async function loadDevelopers() {
                 return '<span class="dev-card-tag">' + esc(t) + '</span>';
             }).join('');
 
-            // === CALCOLO RATING AUTOMATICO IN BASE ALLE RECENSIONI ===
             var ratingHtml = '';
-            
-            // Cerca le recensioni fatte a questo developer (tramite il nome)
-            var devReviews = reviews.filter(function(r) {
-                return r.username === dev.name;
-            });
+            var devReviews = reviews.filter(function(r) { return r.username === dev.name; });
 
-            // Se ci sono recensioni per questo developer
             if (devReviews.length > 0) {
                 var sum = 0;
-                devReviews.forEach(function(r) {
-                    sum += Number(r.rating) || 0;
-                });
+                devReviews.forEach(function(r) { sum += Number(r.rating) || 0; });
                 var avg = (sum / devReviews.length).toFixed(1);
-                
-                // Mostra la stella solo se la media è maggiore di 0
                 if (Number(avg) > 0) {
                     ratingHtml = '<span class="dev-card-rating"><i class="fa-solid fa-star"></i> ' + avg + '</span>';
                 }
@@ -194,6 +185,4 @@ async function loadDevelopers() {
     }
 }
 
-
-// ===== START =====
-initUser();
+initUser(false, loadDevelopers);
