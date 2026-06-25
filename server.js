@@ -144,7 +144,9 @@ app.get('/callback', async (req, res) => {
 // API — prende info utente Discord per ID
 app.get('/api/discord-user/:id', async (req, res) => {
     const userId = req.params.id;
-    if (!userId || !DISCORD_BOT_TOKEN) return res.json({ error: 'Bot token non configurato' });
+    if (!userId || !DISCORD_BOT_TOKEN) {
+        return res.status(500).json({ error: 'Bot token non configurato' });
+    }
     try {
         const userRes = await axios.get('https://discord.com/api/users/' + userId, {
             headers: { Authorization: 'Bot ' + DISCORD_BOT_TOKEN }
@@ -159,7 +161,18 @@ app.get('/api/discord-user/:id', async (req, res) => {
                 : 'https://cdn.discordapp.com/embed/avatars/0.png'
         });
     } catch (e) {
-        res.json({ error: 'Utente non trovato' });
+        var status = e.response ? e.response.status : 0;
+        if (status === 404) {
+            return res.status(404).json({ error: 'Utente Discord non trovato (ID errato?)' });
+        }
+        if (status === 401) {
+            return res.status(500).json({ error: 'Bot Token scaduto o invalido! Rigeneralo' });
+        }
+        if (status === 403) {
+            return res.status(500).json({ error: 'Bot senza permessi' });
+        }
+        console.error('[Discord User Error]', status, e.message);
+        res.status(500).json({ error: 'Errore Discord: ' + status + ' - ' + (e.message || 'sconosciuto') });
     }
 });
 
