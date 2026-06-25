@@ -11,14 +11,22 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname)));
 
 // ========================================================
-//  CONFIGURAZIONE — I segreti stanno nelle ENV di Render
+//  CONFIGURAZIONE
 // ========================================================
-const DISCORD_CLIENT_ID     = process.env.DISCORD_CLIENT_ID || '1518326560321573156';
-const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || 'TbXZiKc3IB875PgcCwONjW77c_l47UqK';
-const DISCORD_BOT_TOKEN      = process.env.DISCORD_BOT_TOKEN || '';
+const DISCORD_CLIENT_ID     = '1518326560321573156';
+const DISCORD_CLIENT_SECRET = 'TbXZiKc3IB875PgcCwONjW77c_l47UqK';
+
+// ========================================================
+//  ⬇️⬇️⬇️  METTI QUI IL TUO BOT TOKEN VERO  ⬇️⬇️⬇️
+// ========================================================
+const DISCORD_BOT_TOKEN      = 'METTI_QUI_IL_TOKEN_VERO';
+// ========================================================
+//  ⬆️⬆️⬆️  DEVE INIZIARE CON MT E AVERE DUE PUNTI  ⬆️⬆️⬆️
+// ========================================================
+
 const REDIRECT_URI          = 'https://core-lab.onrender.com/callback';
 const JSONBIN_ID            = '6a3ad2d7da38895dfef34b4c';
-const JSONBIN_KEY           = process.env.JSONBIN_KEY || '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+const JSONBIN_KEY           = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 const DISCORD_GUILD_ID      = '1518317193698218035';
 
 
@@ -37,13 +45,9 @@ discordClient.once('ready', () => {
     console.log('[BOT] Connesso a Discord come ' + discordClient.user.tag);
 });
 
-if (DISCORD_BOT_TOKEN) {
-    discordClient.login(DISCORD_BOT_TOKEN).catch(err => {
-        console.error('[BOT] Errore connessione a Discord:', err.message);
-    });
-} else {
-    console.error('[BOT] DISCORD_BOT_TOKEN non impostato!');
-}
+discordClient.login(DISCORD_BOT_TOKEN).catch(err => {
+    console.error('[BOT] Errore connessione a Discord:', err.message);
+});
 
 
 // API — stato reale utente Discord
@@ -148,8 +152,8 @@ app.get('/callback', async (req, res) => {
 app.get('/api/discord-user/:id', async (req, res) => {
     const userId = req.params.id;
 
-    if (!DISCORD_BOT_TOKEN) {
-        return res.status(500).json({ error: 'Bot Token non impostato nelle Environment Variables di Render' });
+    if (DISCORD_BOT_TOKEN === 'METTI_QUI_IL_TOKEN_VERO') {
+        return res.status(500).json({ error: 'Hai dimenticato di mettere il token nel server.js!' });
     }
 
     try {
@@ -171,10 +175,7 @@ app.get('/api/discord-user/:id', async (req, res) => {
             return res.status(404).json({ error: 'Utente Discord non trovato (ID errato?)' });
         }
         if (status === 401) {
-            return res.status(500).json({ error: 'Bot Token invalido! Controlla la Environment Variable su Render' });
-        }
-        if (status === 403) {
-            return res.status(500).json({ error: 'Bot senza permessi' });
+            return res.status(500).json({ error: 'Bot Token invalido!' });
         }
         console.error('[Discord User Error]', status, e.message);
         res.status(500).json({ error: 'Errore Discord: ' + status + ' - ' + (e.message || 'sconosciuto') });
