@@ -63,35 +63,6 @@ function showUser(u) {
         document.cookie = 'corelab_uid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         window.location.href = 'login.html';
     });
-
-    checkAdmin(u.id).then(function(isAdmin) {
-        if (!isAdmin) return;
-        var navLinks = document.getElementById('navLinks');
-        if (navLinks) {
-            var btn = document.createElement('a');
-            btn.href = 'admin.html';
-            btn.className = 'nav-admin';
-            btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Admin';
-            navLinks.appendChild(btn);
-        }
-        var mobileMenu = document.getElementById('mobileMenu');
-        if (mobileMenu) {
-            var mBtn = document.createElement('a');
-            mBtn.href = 'admin.html';
-            mBtn.className = 'mobile-admin';
-            mBtn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Admin';
-            mobileMenu.appendChild(mBtn);
-        }
-    });
-}
-
-async function checkAdmin(userId) {
-    try {
-        var res = await fetch(MAIN_BIN_URL, { headers: { 'X-Master-Key': BIN_KEY } });
-        if (!res.ok) return false;
-        var data = (await res.json()).record;
-        return (data.admins || []).indexOf(userId) !== -1;
-    } catch(e) { return false; }
 }
 
 
@@ -138,7 +109,6 @@ function starsHtml(rating) {
 
 
 // ===== CARICA RECENSIONI =====
-// ===== CARICA RECENSIONI =====
 async function loadReviews() {
     var grid = document.getElementById('reviewsGrid');
     try {
@@ -168,7 +138,6 @@ async function loadReviews() {
             card.className = 'review-card scroll-in';
             card.style.transitionDelay = (i * 0.08) + 's';
 
-            // Nuovo ordine: Avatar -> Nome -> Testo -> Stelle
             card.innerHTML =
                 '<img class="review-card-avatar" src="' + esc(cardAvatar) + '" alt="" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'">' +
                 '<div class="review-card-name">' + esc(cardUsername) + '</div>' +
