@@ -1,135 +1,8 @@
-// ===== BIN CONFIG =====
-var BIN_ID      = '6a3ad2d7da38895dfef34b4c'; // bin principale (utenti, stats, developer)
-var PRODUCTS_ID = '6a3b19cbf5f4af5e29261b00'; // bin prodotti
-var REVIEWS_ID  = '6a3b343bda38895dfef4de16'; // bin recensioni
-var API_KEY     = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+// page.js — Solo logica pagina prodotti e recensioni
 
-var BIN_URL      = 'https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest';
-var PRODUCTS_URL = 'https://api.jsonbin.io/v3/b/' + PRODUCTS_ID + '/latest';
-var REVIEWS_URL  = 'https://api.jsonbin.io/v3/b/' + REVIEWS_ID + '/latest';
-
-
-// ===== ICONE =====
 var ICON_ROBUX  = '<img src="https://cdn.discordapp.com/emojis/1518427187894550588.png" class="price-icon">';
 var ICON_PAYPAL = '<img src="https://cdn.discordapp.com/emojis/1518427263455068201.png" class="price-icon">';
 
-
-// ===== UTENTE =====
-function initUser() {
-    var u = null;
-    try { var d = localStorage.getItem('corelab_user'); u = d ? JSON.parse(d) : null; } catch(e) {}
-    if (!u) {
-        var uid = getCookie('corelab_uid');
-        if (uid) { loadUserFromBin(uid); return true; }
-        window.location.href = 'login.html';
-        return false;
-    }
-    showUser(u);
-    return true;
-}
-
-function getCookie(name) {
-    var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    return match ? match[2] : null;
-}
-
-async function loadUserFromBin(uid) {
-    try {
-        var res = await fetch(BIN_URL, { headers: { 'X-Master-Key': API_KEY } });
-        if (!res.ok) return;
-        var data = (await res.json()).record;
-        var found = data.users.find(function(u) { return u.id === uid; });
-        if (found) {
-            localStorage.setItem('corelab_user', JSON.stringify(found));
-            showUser(found);
-        }
-    } catch(e) {}
-}
-
-function showUser(u) {
-    var name = u.globalName || u.username || 'Utente';
-    var avatar = u.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
-
-    [['navAvatar','navUsername'],['mobileAvatar','mobileUsername']].forEach(function(pair) {
-        var av = document.getElementById(pair[0]);
-        var nm = document.getElementById(pair[1]);
-        if (av) av.src = avatar;
-        if (nm) nm.textContent = name;
-    });
-
-    var nu = document.getElementById('navUser');
-    var mu = document.getElementById('mobileUser');
-    var lo = document.getElementById('logoutBtn');
-    var ml = document.getElementById('mobileLogout');
-
-    if (nu) nu.style.display = 'flex';
-    if (mu) mu.style.display = 'flex';
-    if (lo) lo.style.display = 'flex';
-    if (ml) ml.style.display = 'block';
-
-    if (lo) lo.addEventListener('click', function() {
-        localStorage.removeItem('corelab_user');
-        document.cookie = 'corelab_uid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        window.location.href = '/logout';
-    });
-
-    // Admin button injection
-    checkAdmin(u.id).then(function(isAdmin) {
-        if (!isAdmin) return;
-        var navLinks = document.getElementById('navLinks');
-        if (navLinks) {
-            var btn = document.createElement('a');
-            btn.href = 'admin.html';
-            btn.className = 'nav-admin';
-            btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Admin';
-            navLinks.appendChild(btn);
-        }
-        var mobileMenu = document.getElementById('mobileMenu');
-        if (mobileMenu) {
-            var mBtn = document.createElement('a');
-            mBtn.href = 'admin.html';
-            mBtn.className = 'mobile-admin';
-            mBtn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Admin';
-            mobileMenu.appendChild(mBtn);
-        }
-    });
-}
-
-async function checkAdmin(userId) {
-    try {
-        var res = await fetch(BIN_URL, { headers: { 'X-Master-Key': API_KEY } });
-        if (!res.ok) return false;
-        var data = (await res.json()).record;
-        return (data.admins || []).indexOf(userId) !== -1;
-    } catch(e) { return false; }
-}
-
-
-// ===== BURGER =====
-var burger = document.getElementById('burger');
-var mobileMenu = document.getElementById('mobileMenu');
-if (burger && mobileMenu) {
-    burger.addEventListener('click', function() {
-        mobileMenu.classList.toggle('open');
-        var s = burger.querySelectorAll('span');
-        var o = mobileMenu.classList.contains('open');
-        s[0].style.transform = o ? 'rotate(45deg) translate(4px,4px)' : '';
-        s[1].style.opacity = o ? '0' : '1';
-        s[2].style.transform = o ? 'rotate(-45deg) translate(4px,-4px)' : '';
-    });
-    mobileMenu.querySelectorAll('a').forEach(function(a) {
-        a.addEventListener('click', function() {
-            mobileMenu.classList.remove('open');
-            burger.querySelectorAll('span').forEach(function(s) { s.style.transform=''; s.style.opacity='1'; });
-        });
-    });
-}
-
-function esc(s) { var d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
-function formatDate(ts) { if(!ts)return ''; var d=new Date(ts); return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear(); }
-
-
-// ===== MODALE =====
 var modalOverlay = null;
 
 function createModal() {
@@ -149,12 +22,8 @@ function openModal(product) {
     if (!modalOverlay) createModal();
 
     var pricesHtml = '<div class="modal-prices">';
-    if (product.priceRbx) {
-        pricesHtml += '<span class="modal-price-tag">' + ICON_ROBUX + ' ' + esc(product.priceRbx) + '</span>';
-    }
-    if (product.price) {
-        pricesHtml += '<span class="modal-price-tag">' + ICON_PAYPAL + ' ' + esc(product.price) + '</span>';
-    }
+    if (product.priceRbx) pricesHtml += '<span class="modal-price-tag">' + ICON_ROBUX + ' ' + esc(product.priceRbx) + '</span>';
+    if (product.price) pricesHtml += '<span class="modal-price-tag">' + ICON_PAYPAL + ' ' + esc(product.price) + '</span>';
     pricesHtml += '</div>';
 
     var creatorHtml = '';
@@ -199,18 +68,11 @@ function closeModal() {
     document.body.style.overflow = '';
 }
 
-
-// ===== RENDER PRODOTTI =====
 function renderProducts(products) {
     var pg = document.getElementById('productsGrid');
     if (!pg) return;
-
     var prods = products.filter(function(p) { return p.active !== false; });
-
-    if (!prods.length) {
-        pg.innerHTML = '<div class="recent-empty">Nessun prodotto disponibile</div>';
-        return;
-    }
+    if (!prods.length) { pg.innerHTML = '<div class="recent-empty">Nessun prodotto disponibile</div>'; return; }
 
     pg.innerHTML = '';
     prods.forEach(function(p) {
@@ -219,12 +81,8 @@ function renderProducts(products) {
         div.style.cursor = 'pointer';
 
         var pricesHtml = '<div class="prod-prices">';
-        if (p.priceRbx) {
-            pricesHtml += '<span class="prod-price-tag">' + ICON_ROBUX + ' ' + esc(p.priceRbx) + '</span>';
-        }
-        if (p.price) {
-            pricesHtml += '<span class="prod-price-tag">' + ICON_PAYPAL + ' ' + esc(p.price) + '</span>';
-        }
+        if (p.priceRbx) pricesHtml += '<span class="prod-price-tag">' + ICON_ROBUX + ' ' + esc(p.priceRbx) + '</span>';
+        if (p.price) pricesHtml += '<span class="prod-price-tag">' + ICON_PAYPAL + ' ' + esc(p.price) + '</span>';
         pricesHtml += '</div>';
 
         var creatorHtml = '';
@@ -246,16 +104,11 @@ function renderProducts(products) {
                 '</div>' +
             '</div>';
 
-        div.addEventListener('click', function() {
-            openModal(p);
-        });
-
+        div.addEventListener('click', function() { openModal(p); });
         pg.appendChild(div);
     });
 }
 
-
-// ===== RENDER RECENSIONI (Corretto con stelle precise) =====
 function renderReviews(revs) {
     var rg = document.getElementById('reviewsGrid');
     if (!rg) return;
@@ -265,11 +118,8 @@ function renderReviews(revs) {
         var starsHtml = '';
         var stelle = parseInt(r.stars) || 0;
         for(var i = 1; i <= 5; i++) {
-            if (i <= stelle) {
-                starsHtml += '<span class="rev-star rev-star-on">★</span>';
-            } else {
-                starsHtml += '<span class="rev-star rev-star-off">☆</span>';
-            }
+            if (i <= stelle) starsHtml += '<span class="rev-star rev-star-on">★</span>';
+            else starsHtml += '<span class="rev-star rev-star-off">☆</span>';
         }
 
         var div = document.createElement('div');
@@ -286,8 +136,6 @@ function renderReviews(revs) {
     });
 }
 
-
-// ===== RENDER DEVELOPER (Singolo) =====
 function renderDeveloper(data) {
     var dc = document.getElementById('devContent');
     if (!dc || !data.developer) return;
@@ -313,8 +161,6 @@ function renderDeveloper(data) {
         '</div>';
 }
 
-
-// ===== SCROLL ANIM =====
 function initScrollAnim() {
     var obs = new IntersectionObserver(function(entries) {
         entries.forEach(function(e) { if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);} });
@@ -322,8 +168,6 @@ function initScrollAnim() {
     document.querySelectorAll('.scroll-in').forEach(function(el,i) { el.style.transitionDelay=(i%6)*0.07+'s'; obs.observe(el); });
 }
 
-
-// ===== LOAD — carica bin principale + bin prodotti + bin recensioni =====
 async function loadPage() {
     try {
         var [mainRes, prodRes, revRes] = await Promise.all([
@@ -332,27 +176,17 @@ async function loadPage() {
             fetch(REVIEWS_URL, { headers: { 'X-Master-Key': API_KEY } })
         ]);
 
-        var mainData = null;
+        var dataMain = null;
         var products = [];
         var reviews = [];
 
-        if (mainRes.ok) {
-            mainData = (await mainRes.json()).record;
-        }
-
-        if (prodRes.ok) {
-            products = (await prodRes.json()).record.products || [];
-        }
-
-        if (revRes.ok) {
-            reviews = (await revRes.json()).record.reviews || [];
-        }
+        if (mainRes.ok) dataMain = (await mainRes.json()).record;
+        if (prodRes.ok) products = (await prodRes.json()).record.products || [];
+        if (revRes.ok) reviews = (await revRes.json()).record.reviews || [];
 
         renderProducts(products);
         renderReviews(reviews);
-        if (mainData) {
-            renderDeveloper(mainData);
-        }
+        if (dataMain) renderDeveloper(dataMain);
 
         setTimeout(initScrollAnim, 50);
     } catch(e) {
@@ -360,4 +194,4 @@ async function loadPage() {
     }
 }
 
-if (initUser()) loadPage();
+initUser(false, loadPage);
