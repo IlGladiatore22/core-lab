@@ -1,3 +1,27 @@
+// ===== BURGER MOBILE INFALLIBILE =====
+document.addEventListener('click', function(e) {
+    var burger = e.target.closest('#burger');
+    if (burger) {
+        e.preventDefault();
+        var mobileMenu = document.getElementById('mobileMenu');
+        if (!mobileMenu) return;
+        mobileMenu.classList.toggle('open');
+        var s = burger.querySelectorAll('span');
+        var o = mobileMenu.classList.contains('open');
+        s[0].style.transform = o ? 'rotate(45deg) translate(4px,4px)' : '';
+        s[1].style.opacity = o ? '0' : '1';
+        s[2].style.transform = o ? 'rotate(-45deg) translate(4px,-4px)' : '';
+        return;
+    }
+    if (e.target.closest('#mobileMenu a')) {
+        var mobileMenu = document.getElementById('mobileMenu');
+        if (!mobileMenu) return;
+        mobileMenu.classList.remove('open');
+        var s = document.getElementById('burger').querySelectorAll('span');
+        s[0].style.transform = ''; s[1].style.opacity = '1'; s[2].style.transform = '';
+    }
+});
+
 // ===== BIN CONFIG =====
 var BIN_ID      = '6a3ad2d7da38895dfef34b4c';
 var PRODUCTS_ID = '6a3b19cbf5f4af5e29261b00';
@@ -10,31 +34,6 @@ var REVIEWS_URL  = 'https://api.jsonbin.io/v3/b/' + REVIEWS_ID + '/latest';
 
 var ICON_ROBUX  = '<img src="https://cdn.discordapp.com/emojis/1518427187894550588.png" class="price-icon">';
 var ICON_PAYPAL = '<img src="https://cdn.discordapp.com/emojis/1518427263455068201.png" class="price-icon">';
-
-
-// ===== BURGER (ISOLATO PER FUNZIONARE SEMPLE) =====
-function initBurger() {
-    var burger = document.getElementById('burger');
-    var mobileMenu = document.getElementById('mobileMenu');
-    if (!burger || !mobileMenu) return;
-    burger.addEventListener('click', function(e) {
-        e.stopPropagation();
-        mobileMenu.classList.toggle('open');
-        var s = burger.querySelectorAll('span');
-        var o = mobileMenu.classList.contains('open');
-        s[0].style.transform = o ? 'rotate(45deg) translate(4px,4px)' : '';
-        s[1].style.opacity = o ? '0' : '1';
-        s[2].style.transform = o ? 'rotate(-45deg) translate(4px,-4px)' : '';
-    });
-    mobileMenu.querySelectorAll('a').forEach(function(a) {
-        a.addEventListener('click', function() {
-            mobileMenu.classList.remove('open');
-            var s = burger.querySelectorAll('span');
-            s[0].style.transform = ''; s[1].style.opacity = '1'; s[2].style.transform = '';
-        });
-    });
-}
-
 
 // ===== UTENTE =====
 function initUser() {
@@ -98,7 +97,6 @@ function showUser(u) {
 
 function esc(s) { var d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
 function formatDate(ts) { if(!ts)return ''; var d=new Date(ts); return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear(); }
-
 
 // ===== MODALE =====
 var modalOverlay = null;
@@ -166,7 +164,6 @@ function closeModal() {
     document.body.style.overflow = '';
 }
 
-
 // ===== RENDER PRODOTTI =====
 function renderProducts(products) {
     var pg = document.getElementById('productsGrid');
@@ -209,7 +206,6 @@ function renderProducts(products) {
     });
 }
 
-
 // ===== RENDER RECENSIONI =====
 function renderReviews(revs) {
     var rg = document.getElementById('reviewsGrid');
@@ -237,8 +233,7 @@ function renderReviews(revs) {
     });
 }
 
-
-// ===== RENDER DEVELOPER (Singolo) =====
+// ===== RENDER DEVELOPER SINGOLO =====
 function renderDeveloper(data) {
     var dc = document.getElementById('devContent');
     if (!dc || !data.developer) return;
@@ -264,7 +259,6 @@ function renderDeveloper(data) {
         '</div>';
 }
 
-
 // ===== SCROLL ANIM =====
 function initScrollAnim() {
     var obs = new IntersectionObserver(function(entries) {
@@ -272,7 +266,6 @@ function initScrollAnim() {
     }, { threshold: 0.1 });
     document.querySelectorAll('.scroll-in').forEach(function(el,i) { el.style.transitionDelay=(i%6)*0.07+'s'; obs.observe(el); });
 }
-
 
 // ===== LOAD =====
 async function loadPage() {
@@ -294,5 +287,4 @@ async function loadPage() {
 }
 
 // ===== START =====
-initBurger();
 if (initUser()) loadPage();
