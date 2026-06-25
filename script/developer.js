@@ -1,33 +1,32 @@
-var BIN_ID  = '6a3ad2d7da38895dfef34b4c';
-var API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
-var BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest';
-
-var mainData = null;
-
-
-// ===== BURGER (ISOLATO PER FUNZIONARE SEMPRE) =====
-function initBurger() {
-    var burger = document.getElementById('burger');
-    var mobileMenu = document.getElementById('mobileMenu');
-    if (!burger || !mobileMenu) return;
-    burger.addEventListener('click', function(e) {
-        e.stopPropagation();
+// ===== BURGER MOBILE INFALLIBILE =====
+document.addEventListener('click', function(e) {
+    var burger = e.target.closest('#burger');
+    if (burger) {
+        e.preventDefault();
+        var mobileMenu = document.getElementById('mobileMenu');
+        if (!mobileMenu) return;
         mobileMenu.classList.toggle('open');
         var s = burger.querySelectorAll('span');
         var o = mobileMenu.classList.contains('open');
         s[0].style.transform = o ? 'rotate(45deg) translate(4px,4px)' : '';
         s[1].style.opacity = o ? '0' : '1';
         s[2].style.transform = o ? 'rotate(-45deg) translate(4px,-4px)' : '';
-    });
-    mobileMenu.querySelectorAll('a').forEach(function(a) {
-        a.addEventListener('click', function() {
-            mobileMenu.classList.remove('open');
-            var s = burger.querySelectorAll('span');
-            s[0].style.transform = ''; s[1].style.opacity = '1'; s[2].style.transform = '';
-        });
-    });
-}
+        return;
+    }
+    if (e.target.closest('#mobileMenu a')) {
+        var mobileMenu = document.getElementById('mobileMenu');
+        if (!mobileMenu) return;
+        mobileMenu.classList.remove('open');
+        var s = document.getElementById('burger').querySelectorAll('span');
+        s[0].style.transform = ''; s[1].style.opacity = '1'; s[2].style.transform = '';
+    }
+});
 
+var BIN_ID  = '6a3ad2d7da38895dfef34b4c';
+var API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+var BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest';
+
+var mainData = null;
 
 // ===== UTENTE =====
 function initUser() {
@@ -88,7 +87,6 @@ function showUser(u) {
 }
 
 function esc(s) { var d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
-
 
 // ===== CARICA DEVELOPERS =====
 async function loadDevelopers() {
@@ -154,7 +152,5 @@ async function loadDevelopers() {
     }
 }
 
-
 // ===== START =====
-initBurger();
 initUser();
