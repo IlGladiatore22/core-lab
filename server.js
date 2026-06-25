@@ -8,6 +8,7 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const app = express();
 app.use(cors());
 app.use(cookieParser());
+app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 // ========================================================
@@ -15,14 +16,48 @@ app.use(express.static(path.join(__dirname)));
 // ========================================================
 const DISCORD_CLIENT_ID     = '1518326560321573156';
 const DISCORD_CLIENT_SECRET = 'TbXZiKc3IB875PgcCwONjW77c_l47UqK';
-
-// LEGGE IL TOKEN DALLE ENVIRONMENT VARIABLES DI RENDER
 const DISCORD_BOT_TOKEN      = process.env.DISCORD_BOT_TOKEN || '';
-
 const REDIRECT_URI          = 'https://core-lab.onrender.com/callback';
 const JSONBIN_ID            = '6a3ad2d7da38895dfef34b4c';
 const JSONBIN_KEY           = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 const DISCORD_GUILD_ID      = '1518317193698218035';
+
+
+// ========================================================
+//  HEARTBEAT — Utenti online in tempo reale
+// ========================================================
+var heartbeats = {}; // { userId: lastTimestamp }
+
+// Pulisci quelli inattivi da più di 60 secondi
+setInterval(function() {
+    var now = Date.now();
+    for (var id in heartbeats) {
+        if (now - heartbeats[id] > 60000) {
+            delete heartbeats[id];
+        }
+    }
+}, 30000);
+
+// Invia heartbeat
+app.post('/api/heartbeat', (req, res) => {
+    var userId = req.body.userId;
+    if (userId) {
+        heartbeats[userId] = Date.now();
+    }
+    res.json({ ok: true, online: Object.keys(heartbeats).length });
+});
+
+// Leggi quanti sono online
+app.get('/api/online-count', (req, res) => {
+    var now = Date.now();
+    var count = 0;
+    for (var id in heartbeats) {
+        if (now - heartbeats[id] <= 60000) {
+            count++;
+        }
+    }
+    res.json({ online: count });
+});
 
 
 // ========================================================
@@ -45,7 +80,7 @@ if (DISCORD_BOT_TOKEN) {
         console.error('[BOT] Errore connessione a Discord:', err.message);
     });
 } else {
-    console.log('[BOT] DISCORD_BOT_TOKEN non trovato. Il bot non si connetterà.');
+    console.log('[BOT] DISCORD_BOT_TOKEN non trovato.');
 }
 
 
@@ -53,12 +88,10 @@ if (DISCORD_BOT_TOKEN) {
 app.get('/api/discord-presence/:id', async (req, res) => {
     const userId = req.params.id;
     if (!discordClient.isReady()) return res.json({ status: 'offline' });
-
     try {
         const guild = discordClient.guilds.cache.get(DISCORD_GUILD_ID);
         if (!guild) return res.json({ status: 'offline' });
         const member = await guild.members.fetch(userId).catch(() => null);
-        
         if (member && member.presence && member.presence.status) {
             return res.json({ status: member.presence.status });
         }
@@ -150,11 +183,9 @@ app.get('/callback', async (req, res) => {
 // API — prende info utente Discord per ID
 app.get('/api/discord-user/:id', async (req, res) => {
     const userId = req.params.id;
-
     if (!DISCORD_BOT_TOKEN) {
-        return res.status(500).json({ error: 'Token non trovato! Devi aggiungerlo nelle Environment su Render.' });
+        return res.status(500).json({ error: 'Token non trovato nelle Environment su Render.' });
     }
-
     try {
         const userRes = await axios.get('https://discord.com/api/users/' + userId, {
             headers: { Authorization: 'Bot ' + DISCORD_BOT_TOKEN }
@@ -170,17 +201,9 @@ app.get('/api/discord-user/:id', async (req, res) => {
         });
     } catch (e) {
         var status = e.response ? e.response.status : 0;
-        if (status === 404) {
-            return res.status(404).json({ error: 'Utente Discord non trovato (ID errato?)' });
-        }
-        if (status === 401) {
-            return res.status(500).json({ error: 'Bot Token invalido! Controlla la Environment su Render.' });
-        }
-        if (status === 403) {
-            return res.status(500).json({ error: 'Bot senza permessi' });
-        }
-        console.error('[Discord User Error]', status, e.message);
-        res.status(500).json({ error: 'Errore Discord: ' + status + ' - ' + (e.message || 'sconosciuto') });
+        if (status === 404) return res.status(404).json({ error: 'Utente Discord non trovato' });
+        if (status === 401) return res.status(500).json({ error: 'Bot Token invalido!' });
+        res.status(500).json({ error: 'Errore Discord: ' + status });
     }
 });
 
