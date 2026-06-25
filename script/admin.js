@@ -4,7 +4,6 @@ var API_KEY     = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'
 var BIN_URL      = 'https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest';
 var PRODUCTS_URL = 'https://api.jsonbin.io/v3/b/' + PRODUCTS_ID + '/latest';
 
-// >>> LINK DEL TUO SERVER RENDER (FONDAMENTALE PER L'ADMIN) <<<
 var RENDER_URL = 'https://core-lab.onrender.com';
 
 var mainData = null;
@@ -12,18 +11,24 @@ var developers = [];
 var currentTags = [];
 
 
-// ===== UTENTE =====
 function initUser() {
     var u = null;
-    try { var d = localStorage.getItem('corelab_user'); u = d ? JSON.parse(d) : null; } catch(e) {}
+    try {
+        var d = localStorage.getItem('corelab_user');
+        u = d ? JSON.parse(d) : null;
+    } catch (e) { u = null; }
+
     if (!u) {
         var uid = getCookie('corelab_uid');
-        if (uid) { loadUserFromBin(uid); return true; }
+        if (uid) {
+            loadUserFromBin(uid);
+            return true;
+        }
         window.location.href = 'login.html';
         return false;
     }
 
-    checkAdmin(u.id).then(function(isAdmin) {
+    checkAdmin(u.id).then(function (isAdmin) {
         if (!isAdmin) {
             window.location.href = 'home.html';
             return;
@@ -45,12 +50,12 @@ async function loadUserFromBin(uid) {
         var res = await fetch(BIN_URL, { headers: { 'X-Master-Key': API_KEY } });
         if (!res.ok) return;
         var data = (await res.json()).record;
-        var found = data.users.find(function(u) { return u.id === uid; });
+        var found = data.users.find(function (u) { return u.id === uid; });
         if (found) {
             localStorage.setItem('corelab_user', JSON.stringify(found));
             showUser(found);
         }
-    } catch(e) {}
+    } catch (e) {}
 }
 
 async function checkAdmin(userId) {
@@ -60,7 +65,7 @@ async function checkAdmin(userId) {
         var data = (await res.json()).record;
         var admins = data.admins || [];
         return admins.indexOf(userId) !== -1;
-    } catch(e) { return false; }
+    } catch (e) { return false; }
 }
 
 function showUser(u) {
@@ -88,7 +93,6 @@ function showUser(u) {
 }
 
 
-// ===== BURGER =====
 var burger = document.getElementById('burger');
 var mobileMenu = document.getElementById('mobileMenu');
 if (burger && mobileMenu) {
@@ -111,7 +115,6 @@ if (burger && mobileMenu) {
 function esc(s) { var d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
 
 
-// ===== TABS =====
 document.querySelectorAll('.tab').forEach(function(tab) {
     tab.addEventListener('click', function() {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
@@ -122,7 +125,6 @@ document.querySelectorAll('.tab').forEach(function(tab) {
 });
 
 
-// ===== LOAD ALL =====
 async function loadAll() {
     try {
         var res = await fetch(BIN_URL, { headers: { 'X-Master-Key': API_KEY } });
@@ -139,7 +141,6 @@ async function loadAll() {
 }
 
 
-// ===== RENDER DEVELOPERS =====
 function renderDevelopers() {
     var list = document.getElementById('devList');
     if (!developers.length) {
@@ -164,7 +165,6 @@ function renderDevelopers() {
             '</div>';
         list.appendChild(row);
     });
-
     document.querySelectorAll('.edit-dev').forEach(function(btn) {
         btn.addEventListener('click', function() { openEditDev(parseInt(this.dataset.idx)); });
     });
@@ -174,37 +174,23 @@ function renderDevelopers() {
 }
 
 
-// ===== RENDER ATTIVITÀ RECENTE =====
 function renderActivity() {
     var list = document.getElementById('activityList');
     if (!list) return;
-
     var activities = mainData.recentActivity || [];
-
     if (!activities.length) {
-        list.innerHTML = '<div class="activity-empty"><i class="fa-solid fa-inbox"></i>Nessuna attività recente</div>';
+        list.innerHTML = '<div class="activity-empty"><i class="fa-solid fa-inbox"></i> Nessuna attività recente</div>';
         return;
     }
-
     list.innerHTML = '';
     activities.forEach(function(act, i) {
         var item = document.createElement('div');
         item.className = 'activity-item';
         item.style.animationDelay = (i * 0.04) + 's';
-
         var actionClass = act.type || 'login';
         var actionLabel = esc(act.action || 'azione sconosciuta');
-
-        var detail = '';
-        if (act.product) {
-            detail = '<div class="activity-detail">' + esc(act.product) + '</div>';
-        }
-
-        var timeStr = '';
-        if (act.timestamp) {
-            timeStr = timeAgo(act.timestamp);
-        }
-
+        var detail = act.product ? '<div class="activity-detail">' + esc(act.product) + '</div>' : '';
+        var timeStr = act.timestamp ? timeAgo(act.timestamp) : '';
         item.innerHTML =
             '<img class="activity-av" src="' + esc(act.avatar) + '" alt="" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'">' +
             '<div class="activity-info">' +
@@ -215,7 +201,6 @@ function renderActivity() {
                 detail +
             '</div>' +
             '<span class="activity-time">' + timeStr + '</span>';
-
         list.appendChild(item);
     });
 }
@@ -231,27 +216,19 @@ function timeAgo(ts) {
     var d = Math.floor(h / 24);
     if (d < 30) return d + 'g fa';
     var mo = Math.floor(d / 30);
-    return mo + 'mesi fa';
+    return mo + ' mesi fa';
 }
 
 
-// ===== MODALE DEVELOPER =====
 var devModal = document.getElementById('devModal');
 var devModalClose = document.getElementById('devModalClose');
 var tagInput = document.getElementById('tagInput');
 var tagsList = document.getElementById('tagsList');
 
-document.getElementById('addDevBtn').addEventListener('click', function() {
-    openAddDev();
-});
-
+document.getElementById('addDevBtn').addEventListener('click', function() { openAddDev(); });
 devModalClose.addEventListener('click', closeDevModal);
-devModal.addEventListener('click', function(e) {
-    if (e.target === devModal) closeDevModal();
-});
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeDevModal();
-});
+devModal.addEventListener('click', function(e) { if (e.target === devModal) closeDevModal(); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDevModal(); });
 
 function openAddDev() {
     document.getElementById('devModalTitle').textContent = 'Aggiungi Developer';
@@ -280,19 +257,14 @@ function openEditDev(idx) {
     devModal.classList.add('open');
 }
 
-function closeDevModal() {
-    devModal.classList.remove('open');
-}
+function closeDevModal() { devModal.classList.remove('open'); }
 
-// tags
+
 tagInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && this.value.trim()) {
         e.preventDefault();
         var tag = this.value.trim();
-        if (currentTags.indexOf(tag) === -1) {
-            currentTags.push(tag);
-            renderTags();
-        }
+        if (currentTags.indexOf(tag) === -1) { currentTags.push(tag); renderTags(); }
         this.value = '';
     }
     if (e.key === 'Backspace' && !this.value && currentTags.length) {
@@ -301,17 +273,12 @@ tagInput.addEventListener('keydown', function(e) {
     }
 });
 
-document.getElementById('tagsInput').addEventListener('click', function() {
-    tagInput.focus();
-});
+document.getElementById('tagsInput').addEventListener('click', function() { tagInput.focus(); });
 
 document.querySelectorAll('.tag-sug').forEach(function(sug) {
     sug.addEventListener('click', function() {
         var tag = this.dataset.tag;
-        if (currentTags.indexOf(tag) === -1) {
-            currentTags.push(tag);
-            renderTags();
-        }
+        if (currentTags.indexOf(tag) === -1) { currentTags.push(tag); renderTags(); }
     });
 });
 
@@ -334,7 +301,6 @@ function renderTags() {
 }
 
 
-// ===== DISCORD FETCH (CORRETTO PER RENDER) =====
 var fetchBtn = document.getElementById('fetchDiscordBtn');
 
 fetchBtn.addEventListener('click', async function() {
@@ -347,12 +313,28 @@ fetchBtn.addEventListener('click', async function() {
         return;
     }
 
+    if (!/^\d+$/.test(userId)) {
+        showToast('Il Discord ID deve contenere solo numeri', 'error');
+        return;
+    }
+
     hideDiscordPreview();
     fetchBtn.classList.add('loading');
 
     try {
-        // >>> FIX: USA RENDER_URL INVECE DI /api/... <<<
-        var res = await fetch(RENDER_URL + '/api/discord-user/' + userId);
+        var url = RENDER_URL + '/api/discord-user/' + encodeURIComponent(userId);
+        console.log('[Fetch] URL:', url);
+
+        var res = await fetch(url);
+
+        if (!res.ok) {
+            var errData = null;
+            try { errData = await res.json(); } catch(e) {}
+            var errMsg = (errData && errData.error) ? errData.error : 'Errore HTTP ' + res.status;
+            showDiscordError(errMsg);
+            return;
+        }
+
         var data = await res.json();
 
         if (data.error) {
@@ -360,30 +342,25 @@ fetchBtn.addEventListener('click', async function() {
             return;
         }
 
-        // compila i campi
-        document.getElementById('devName').value = data.globalName || data.username;
-        document.getElementById('devAvatar').value = data.avatar;
+        document.getElementById('devName').value = data.globalName || data.username || '';
+        document.getElementById('devAvatar').value = data.avatar || '';
 
-        // mostra anteprima
         var preview = document.getElementById('discordPreview');
-        document.getElementById('discordPreviewAv').src = data.avatar;
-        document.getElementById('discordPreviewName').textContent = data.globalName || data.username;
-        document.getElementById('discordPreviewId').textContent = data.id;
+        document.getElementById('discordPreviewAv').src = data.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+        document.getElementById('discordPreviewName').textContent = data.globalName || data.username || '';
+        document.getElementById('discordPreviewId').textContent = data.id || userId;
         preview.style.display = 'flex';
 
     } catch(e) {
+        console.error('[Fetch] Errore:', e);
         showDiscordError('Errore di connessione al server');
     } finally {
         fetchBtn.classList.remove('loading');
     }
 });
 
-// anche premi Invio nel campo Discord ID lancia il fetch
 document.getElementById('devDiscordId').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        fetchBtn.click();
-    }
+    if (e.key === 'Enter') { e.preventDefault(); fetchBtn.click(); }
 });
 
 function showDiscordError(msg) {
@@ -398,7 +375,6 @@ function hideDiscordPreview() {
 }
 
 
-// ===== SAVE DEV =====
 document.getElementById('saveDevBtn').addEventListener('click', async function() {
     var name = document.getElementById('devName').value.trim();
     var role = document.getElementById('devRole').value.trim();
@@ -406,10 +382,7 @@ document.getElementById('saveDevBtn').addEventListener('click', async function()
     var avatar = document.getElementById('devAvatar').value.trim();
     var idx = parseInt(document.getElementById('devEditIndex').value);
 
-    if (!name) {
-        showToast('Inserisci il nome', 'error');
-        return;
-    }
+    if (!name) { showToast('Inserisci il nome', 'error'); return; }
 
     var devObj = {
         name: name,
@@ -419,12 +392,7 @@ document.getElementById('saveDevBtn').addEventListener('click', async function()
         tags: currentTags.slice()
     };
 
-    if (idx === -1) {
-        developers.push(devObj);
-    } else {
-        developers[idx] = devObj;
-    }
-
+    if (idx === -1) { developers.push(devObj); } else { developers[idx] = devObj; }
     mainData.developers = developers;
 
     try {
@@ -432,12 +400,9 @@ document.getElementById('saveDevBtn').addEventListener('click', async function()
         renderDevelopers();
         closeDevModal();
         showToast(idx === -1 ? 'Developer aggiunto' : 'Developer aggiornato', 'success');
-    } catch(e) {
-        showToast('Errore salvataggio: ' + e.message, 'error');
-    }
+    } catch(e) { showToast('Errore salvataggio: ' + e.message, 'error'); }
 });
 
-// delete dev
 async function deleteDev(idx) {
     var name = developers[idx].name;
     if (!confirm('Eliminare ' + name + '?')) return;
@@ -447,13 +412,10 @@ async function deleteDev(idx) {
         await saveBin();
         renderDevelopers();
         showToast('Developer eliminato', 'success');
-    } catch(e) {
-        showToast('Errore: ' + e.message, 'error');
-    }
+    } catch(e) { showToast('Errore: ' + e.message, 'error'); }
 }
 
 
-// ===== SETTINGS =====
 function loadSettings() {
     if (!mainData) return;
     var s = mainData.settings || {};
@@ -466,31 +428,22 @@ function loadSettings() {
 document.getElementById('saveSettingsBtn').addEventListener('click', async function() {
     if (!mainData) return;
     if (!mainData.settings) mainData.settings = {};
-
     mainData.settings.siteName = document.getElementById('setSiteName').value.trim();
     mainData.settings.siteDesc = document.getElementById('setSiteDesc').value.trim();
     mainData.settings.discordLink = document.getElementById('setDiscordLink').value.trim();
-
     var adminsStr = document.getElementById('setAdmins').value.trim();
     mainData.admins = adminsStr ? adminsStr.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
-
     try {
         await saveBin();
         showToast('Impostazioni salvate', 'success');
-    } catch(e) {
-        showToast('Errore: ' + e.message, 'error');
-    }
+    } catch(e) { showToast('Errore: ' + e.message, 'error'); }
 });
 
 
-// ===== SAVE BIN =====
 async function saveBin() {
     var res = await fetch('https://api.jsonbin.io/v3/b/' + BIN_ID, {
         method: 'PUT',
-        headers: {
-            'X-Master-Key': API_KEY,
-            'Content-Type': 'application/json'
-        },
+        headers: { 'X-Master-Key': API_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify(mainData)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -498,16 +451,12 @@ async function saveBin() {
 }
 
 
-// ===== TOAST =====
 function showToast(msg, type) {
     var toast = document.getElementById('toast');
     toast.textContent = msg;
     toast.className = 'toast ' + type + ' show';
-    setTimeout(function() {
-        toast.classList.remove('show');
-    }, 2500);
+    setTimeout(function() { toast.classList.remove('show'); }, 2500);
 }
 
 
-// ===== START =====
 initUser();
