@@ -5,6 +5,30 @@ var BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest';
 var mainData = null;
 
 
+// ===== BURGER (ISOLATO PER FUNZIONARE SEMPRE) =====
+function initBurger() {
+    var burger = document.getElementById('burger');
+    var mobileMenu = document.getElementById('mobileMenu');
+    if (!burger || !mobileMenu) return;
+    burger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        mobileMenu.classList.toggle('open');
+        var s = burger.querySelectorAll('span');
+        var o = mobileMenu.classList.contains('open');
+        s[0].style.transform = o ? 'rotate(45deg) translate(4px,4px)' : '';
+        s[1].style.opacity = o ? '0' : '1';
+        s[2].style.transform = o ? 'rotate(-45deg) translate(4px,-4px)' : '';
+    });
+    mobileMenu.querySelectorAll('a').forEach(function(a) {
+        a.addEventListener('click', function() {
+            mobileMenu.classList.remove('open');
+            var s = burger.querySelectorAll('span');
+            s[0].style.transform = ''; s[1].style.opacity = '1'; s[2].style.transform = '';
+        });
+    });
+}
+
+
 // ===== UTENTE =====
 function initUser() {
     var u = null;
@@ -63,29 +87,6 @@ function showUser(u) {
     });
 }
 
-
-// ===== BURGER =====
-var burger = document.getElementById('burger');
-var mobileMenu = document.getElementById('mobileMenu');
-if (burger && mobileMenu) {
-    burger.addEventListener('click', function() {
-        mobileMenu.classList.toggle('open');
-        var s = burger.querySelectorAll('span');
-        var o = mobileMenu.classList.contains('open');
-        s[0].style.transform = o ? 'rotate(45deg) translate(4px,4px)' : '';
-        s[1].style.opacity = o ? '0' : '1';
-        s[2].style.transform = o ? 'rotate(-45deg) translate(4px,-4px)' : '';
-    });
-    mobileMenu.querySelectorAll('a').forEach(function(a) {
-        a.addEventListener('click', function() {
-            mobileMenu.classList.remove('open');
-            burger.querySelectorAll('span').forEach(function(s) { s.style.transform=''; s.style.opacity='1'; });
-        });
-    });
-}
-
-
-// ===== ESCAPE =====
 function esc(s) { var d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
 
 
@@ -98,7 +99,7 @@ async function loadDevelopers() {
         mainData = (await res.json()).record;
         
         var devs = mainData.developers || [];
-        var reviews = mainData.reviews || []; // Prende tutte le recensioni
+        var reviews = mainData.reviews || []; 
 
         if (!devs.length) {
             grid.innerHTML = '<div class="recent-empty"><i class="fa-solid fa-user-slash" style="display:block;font-size:1.4rem;margin-bottom:10px;opacity:.4;"></i>Nessun developer nel team</div>';
@@ -112,23 +113,13 @@ async function loadDevelopers() {
                 return '<span class="dev-card-tag">' + esc(t) + '</span>';
             }).join('');
 
-            // === CALCOLO RATING AUTOMATICO IN BASE ALLE RECENSIONI ===
             var ratingHtml = '';
-            
-            // Cerca le recensioni fatte a questo developer (tramite il nome)
-            var devReviews = reviews.filter(function(r) {
-                return r.username === dev.name;
-            });
+            var devReviews = reviews.filter(function(r) { return r.username === dev.name; });
 
-            // Se ci sono recensioni per questo developer
             if (devReviews.length > 0) {
                 var sum = 0;
-                devReviews.forEach(function(r) {
-                    sum += Number(r.rating) || 0;
-                });
+                devReviews.forEach(function(r) { sum += Number(r.rating) || 0; });
                 var avg = (sum / devReviews.length).toFixed(1);
-                
-                // Mostra la stella solo se la media è maggiore di 0
                 if (Number(avg) > 0) {
                     ratingHtml = '<span class="dev-card-rating"><i class="fa-solid fa-star"></i> ' + avg + '</span>';
                 }
@@ -147,9 +138,7 @@ async function loadDevelopers() {
                     '<div class="dev-card-role">' + esc(dev.role || 'Developer') + '</div>' +
                     '<div class="dev-card-tags">' + tags + '</div>' +
                 '</div>' +
-                '<div class="dev-card-footer">' +
-                    ratingHtml +
-                '</div>';
+                '<div class="dev-card-footer">' + ratingHtml + '</div>';
 
             grid.appendChild(card);
         });
@@ -167,4 +156,5 @@ async function loadDevelopers() {
 
 
 // ===== START =====
+initBurger();
 initUser();
