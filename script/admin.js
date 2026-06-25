@@ -435,6 +435,14 @@ document.getElementById('saveSettingsBtn').addEventListener('click', async funct
     mainData.admins = adminsStr ? adminsStr.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
     try {
         await saveBin();
+        
+        // FIX: Aggiorna il nome nel navbar e nel titolo della pagina in tempo reale
+        var newName = mainData.settings.siteName || 'Core Lab';
+        document.querySelectorAll('.nav-logo span').forEach(function(span) {
+            span.textContent = newName;
+        });
+        document.title = document.title.replace(/Core Lab[^—]*/, newName.trim());
+
         showToast('Impostazioni salvate', 'success');
     } catch(e) { showToast('Errore: ' + e.message, 'error'); }
 });
