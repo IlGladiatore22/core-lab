@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Lab — Carrello</title>
+    <link rel="stylesheet" href="../estetica/page.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+    <nav>
+        <div class="nav-inner">
+            <a href="home.html" class="nav-logo">
+                <img src="../assets/logo.png" alt="Logo" class="nav-logo-img">
+                <span>Core Lab</span>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="home.html"><i class="fa-solid fa-house"></i> Home</a>
+                <a href="prodotti.html"><i class="fa-solid fa-box"></i> Prodotti</a>
+                <a href="developer.html"><i class="fa-solid fa-code"></i> Developer</a>
+                <a href="recensioni.html"><i class="fa-solid fa-star"></i> Recensioni</a>
+                <a href="assistenza.html"><i class="fa-solid fa-headset"></i> Assistenza</a>
+                <a href="admin.html"><i class="fa-solid fa-shield-halved"></i> Admin</a>
+            </div>
+            <div class="nav-right">
+                <div class="nav-user" id="navUser" style="display:none;">
+                    <img class="nav-avatar" id="navAvatar" src="" alt="">
+                    <span class="nav-username" id="navUsername"></span>
+                </div>
+                <button class="nav-logout" id="logoutBtn" style="display:none;" title="Logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+                <button class="nav-burger" id="burger">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-user" id="mobileUser" style="display:none;">
+            <img class="mobile-avatar" id="mobileAvatar" src="" alt="">
+            <span id="mobileUsername"></span>
+        </div>
+        <a href="home.html"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="prodotti.html"><i class="fa-solid fa-box"></i> Prodotti</a>
+        <a href="developer.html"><i class="fa-solid fa-code"></i> Developer</a>
+        <a href="recensioni.html"><i class="fa-solid fa-star"></i> Recensioni</a>
+        <a href="assistenza.html"><i class="fa-solid fa-headset"></i> Assistenza</a>
+        <a href="admin.html"><i class="fa-solid fa-shield-halved"></i> Admin</a>
+        <a href="login.html" id="mobileLogout" style="display:none;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </div>
+
+    <div class="bg-scene">
+        <div class="bg-orb o1"></div>
+        <div class="bg-orb o2"></div>
+        <div class="bg-orb o3"></div>
+        <div class="bg-grain"></div>
+    </div>
+
+    <main class="page">
+        <div class="page-inner">
+            <h1><i class="fa-solid fa-cart-shopping"></i> Carrello</h1>
+            <p class="page-desc">I prodotti che hai selezionato.</p>
+            
+            <div class="cart-container" id="cartContainer">
+                <div class="recent-empty">caricamento...</div>
+            </div>
+        </div>
+    </main>
+
+<script src="../script/carrello.js?v=1"></script>
+</body>
+</html>
