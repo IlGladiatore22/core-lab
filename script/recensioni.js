@@ -1,6 +1,10 @@
-var BIN_ID  = '6a3ad2d7da38895dfef34b4c';
-var API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
-var BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest';
+var BIN_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+
+// >>> IL NUOVO BIN DOVE IL BOT SALVA LE RECENSIONI <<<
+var REVIEWS_BIN_URL = 'https://api.jsonbin.io/v3/b/6a3b343bda38895dfef4de16/latest';
+
+// Il vecchio bin principale (serve solo per login/admin)
+var MAIN_BIN_URL = 'https://api.jsonbin.io/v3/b/6a3ad2d7da38895dfef34b4c/latest';
 
 
 // ===== UTENTE =====
@@ -25,7 +29,7 @@ function getCookie(name) {
 
 async function loadUserFromBin(uid) {
     try {
-        var res = await fetch(BIN_URL, { headers: { 'X-Master-Key': API_KEY } });
+        var res = await fetch(MAIN_BIN_URL, { headers: { 'X-Master-Key': BIN_KEY } });
         if (!res.ok) return;
         var data = (await res.json()).record;
         var found = data.users.find(function(u) { return u.id === uid; });
@@ -57,12 +61,12 @@ function showUser(u) {
     if (lo) lo.addEventListener('click', function() {
         localStorage.removeItem('corelab_user');
         document.cookie = 'corelab_uid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        window.location.href = '/logout';
+        window.location.href = 'login.html';
     });
 
     checkAdmin(u.id).then(function(isAdmin) {
         if (!isAdmin) return;
-        var navLinks = document.querySelector('.nav-links');
+        var navLinks = document.getElementById('navLinks');
         if (navLinks) {
             var btn = document.createElement('a');
             btn.href = 'admin.html';
@@ -83,7 +87,7 @@ function showUser(u) {
 
 async function checkAdmin(userId) {
     try {
-        var res = await fetch(BIN_URL, { headers: { 'X-Master-Key': API_KEY } });
+        var res = await fetch(MAIN_BIN_URL, { headers: { 'X-Master-Key': BIN_KEY } });
         if (!res.ok) return false;
         var data = (await res.json()).record;
         return (data.admins || []).indexOf(userId) !== -1;
@@ -117,13 +121,10 @@ function esc(s) { var d = document.createElement('div'); d.textContent = s||''; 
 
 
 // ===== GENERA STELLE =====
-// Se rating non esiste, è 0, null o undefined → 5 stelle vuote
 function starsHtml(rating) {
     var n = parseInt(rating, 10);
-    // Se non è un numero valido, azzera
     if (isNaN(n) || n <= 0) n = 0;
     if (n > 5) n = 5;
-
     var out = '';
     for (var i = 1; i <= 5; i++) {
         if (i <= n) {
@@ -136,11 +137,12 @@ function starsHtml(rating) {
 }
 
 
-// ===== CARICA RECENSIONI =====
+// ===== CARICA RECENSIONI (DAL NUOVO BIN) =====
 async function loadReviews() {
     var grid = document.getElementById('reviewsGrid');
     try {
-        var res = await fetch(BIN_URL, { headers: { 'X-Master-Key': API_KEY } });
+        // Legge dal bin dedicato alle recensioni
+        var res = await fetch(REVIEWS_BIN_URL, { headers: { 'X-Master-Key': BIN_KEY } });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         var data = (await res.json()).record;
         var reviews = data.reviews || [];
@@ -153,19 +155,30 @@ async function loadReviews() {
         grid.innerHTML = '';
 
         reviews.forEach(function(rev, i) {
+            // TRADUCE i dati del bot Discord nel formato del sito
+            var cardUsername = rev.username || 'Utente';
+            var cardAvatar = rev.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+            var cardRating = rev.stars || 0; // Il bot salva "stars", il sito usa "rating"
+            
+            // Il bot salva "product", lo mostriamo come testo della recensione
+            var cardText = 'Prodotto: ' + esc(rev.product || 'N/A');
+            if (rev.price) {
+                cardText += ' | Prezzo: ' + esc(rev.price);
+            }
+
             var card = document.createElement('div');
             card.className = 'review-card scroll-in';
             card.style.transitionDelay = (i * 0.08) + 's';
 
             card.innerHTML =
                 '<div class="review-card-top">' +
-                    '<img class="review-card-avatar" src="' + esc(rev.avatar) + '" alt="" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'">' +
+                    '<img class="review-card-avatar" src="' + esc(cardAvatar) + '" alt="" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'">' +
                     '<div>' +
-                        '<div class="review-card-name">' + esc(rev.username) + '</div>' +
-                        '<div class="review-card-stars">' + starsHtml(rev.rating) + '</div>' +
+                        '<div class="review-card-name">' + esc(cardUsername) + '</div>' +
+                        '<div class="review-card-stars">' + starsHtml(cardRating) + '</div>' +
                     '</div>' +
                 '</div>' +
-                '<div class="review-card-text">' + esc(rev.text) + '</div>';
+                '<div class="review-card-text">' + cardText + '</div>';
 
             grid.appendChild(card);
         });
