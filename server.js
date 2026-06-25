@@ -2,9 +2,11 @@ const express = require('express');
 const axios = require('axios');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const cors = require('cors');
 const { Client, GatewayIntentBits } = require('discord.js');
 
 const app = express();
+app.use(cors());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname)));
 
@@ -130,7 +132,6 @@ app.get('/callback', async (req, res) => {
 
         res.cookie('corelab_uid', u.id, { maxAge: 7*24*60*60*1000, path: '/', sameSite: 'Lax' });
         
-        // RIMANDA AL SITO GITHUB PAGES CON L'ID UTENTE
         res.redirect('https://ilgladiatore22.github.io/core-lab/index.html?uid=' + u.id);
 
     } catch (err) {
@@ -169,7 +170,6 @@ app.get('/logout', (req, res) => {
 });
 
 
-// PORTA DINAMICA PER RENDER
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log('Server avviato sulla porta ' + PORT);
