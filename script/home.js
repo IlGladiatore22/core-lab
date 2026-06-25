@@ -128,7 +128,6 @@ async function loadSiteData() {
 
         var settings = siteData.settings || {};
 
-        // Nome sito
         var siteName = settings.siteName || 'Core Lab';
         document.title = siteName + ' — Home';
         var navLogoSpan = document.querySelector('.nav-logo span');
@@ -136,12 +135,10 @@ async function loadSiteData() {
         var footerSpan = document.querySelector('.footer-left span');
         if (footerSpan) footerSpan.textContent = siteName;
 
-        // Descrizione
         var siteDesc = settings.siteDesc || 'Prodotti per Roblox, fatti bene. Niente scam, niente cazzate.';
         var heroDesc = document.getElementById('heroDesc');
         if (heroDesc) heroDesc.textContent = siteDesc;
 
-        // Stats
         var stats = siteData.stats || {};
         animateNum('statUsers', stats.totalUsers || 0);
         animateNum('statSales', stats.totalSales || 0);
@@ -156,10 +153,37 @@ async function loadSiteData() {
 async function loadReviews() {
     try {
         var res = await fetch(REVIEWS_URL, { headers: { 'X-Master-Key': API_KEY } });
-        if (!res.ok) return;
-        var data = (await res.json()).record;
-        var reviews = data.reviews || [];
+        if (!res.ok) {
+            console.error('Errore caricamento recensioni: HTTP ' + res.status);
+            return;
+        }
+        var json = await res.json();
+        var record = json.record;
+
+        // Gestisce tutte le strutture possibili del bin
+        var reviews = null;
+
+        if (Array.isArray(record)) {
+            // Il bin è direttamente un array: [{...}, {...}]
+            reviews = record;
+        } else if (record && Array.isArray(record.reviews)) {
+            // Il bin ha una proprietà reviews: { reviews: [{...}] }
+            reviews = record.reviews;
+        } else if (record && typeof record === 'object') {
+            // Il bin è un oggetto ma senza proprietà reviews — cercha array dentro
+            for (var key in record) {
+                if (Array.isArray(record[key]) && record[key].length > 0 && record[key][0].text) {
+                    reviews = record[key];
+                    break;
+                }
+            }
+        }
+
+        if (!reviews) reviews = [];
+
+        console.log('[Recensioni] Trovate ' + reviews.length + ' recensioni nel bin');
         renderHomeReviews(reviews);
+
     } catch (e) {
         console.error('Errore caricamento recensioni:', e.message);
     }
@@ -171,9 +195,11 @@ function renderHomeReviews(reviews) {
     var grid = document.getElementById('homeReviewsGrid');
     if (!grid) return;
 
-    // Aggiorna contatore
+    // Aggiorna contatore con il numero reale dal bin
     var revCount = document.getElementById('statReviews');
-    if (revCount) animateNum('statReviews', reviews.length);
+    if (revCount) {
+        animateNum('statReviews', reviews.length);
+    }
 
     if (!reviews.length) {
         grid.innerHTML = '<div class="reviews-empty"><i class="fa-solid fa-star"></i>Nessuna recensione ancora</div>';
@@ -186,8 +212,9 @@ function renderHomeReviews(reviews) {
 
     latest.forEach(function (rev) {
         var stars = '';
+        var starCount = parseInt(rev.stars) || 5;
         for (var i = 0; i < 5; i++) {
-            if (i < (rev.stars || 5)) {
+            if (i < starCount) {
                 stars += '<i class="fa-solid fa-star"></i> ';
             } else {
                 stars += '<i class="fa-regular fa-star"></i> ';
@@ -218,13 +245,31 @@ function renderHomeReviews(reviews) {
 }
 
 
-// ===== AGGIORNAMENTO PERIODICO RECENSIONI =====
+// ===== AGGIORNAMENTO PERIODICO RECENSIONI (ogni 30s) =====
 async function refreshReviews() {
     try {
         var res = await fetch(REVIEWS_URL, { headers: { 'X-Master-Key': API_KEY } });
         if (!res.ok) return;
-        var data = (await res.json()).record;
-        renderHomeReviews(data.reviews || []);
+        var json = await res.json();
+        var record = json.record;
+
+        var reviews = null;
+        if (Array.isArray(record)) {
+            reviews = record;
+        } else if (record && Array.isArray(record.reviews)) {
+            reviews = record.reviews;
+        } else if (record && typeof record === 'object') {
+            for (var key in record) {
+                if (Array.isArray(record[key]) && record[key].length > 0 && record[key][0].text) {
+                    reviews = record[key];
+                    break;
+                }
+            }
+        }
+
+        if (!reviews) reviews = [];
+        renderHomeReviews(reviews);
+
     } catch (e) {}
 }
 
