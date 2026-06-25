@@ -16,13 +16,8 @@ app.use(express.static(path.join(__dirname)));
 const DISCORD_CLIENT_ID     = '1518326560321573156';
 const DISCORD_CLIENT_SECRET = 'TbXZiKc3IB875PgcCwONjW77c_l47UqK';
 
-// ========================================================
-//  ⬇️⬇️⬇️  METTI QUI IL TUO BOT TOKEN VERO  ⬇️⬇️⬇️
-// ========================================================
-const DISCORD_BOT_TOKEN      = 'MTUxODMyNjU2MDMyMTU3MzE1Ng.G9Xxso.pSNulD82bBUvappw3LxjbMF8KYPyifmE7lDnAM';
-// ========================================================
-//  ⬆️⬆️⬆️  DEVE INIZIARE CON MT E AVERE DUE PUNTI  ⬆️⬆️⬆️
-// ========================================================
+// LEGGE IL TOKEN DALLE ENVIRONMENT VARIABLES DI RENDER
+const DISCORD_BOT_TOKEN      = process.env.DISCORD_BOT_TOKEN || '';
 
 const REDIRECT_URI          = 'https://core-lab.onrender.com/callback';
 const JSONBIN_ID            = '6a3ad2d7da38895dfef34b4c';
@@ -45,9 +40,13 @@ discordClient.once('ready', () => {
     console.log('[BOT] Connesso a Discord come ' + discordClient.user.tag);
 });
 
-discordClient.login(DISCORD_BOT_TOKEN).catch(err => {
-    console.error('[BOT] Errore connessione a Discord:', err.message);
-});
+if (DISCORD_BOT_TOKEN) {
+    discordClient.login(DISCORD_BOT_TOKEN).catch(err => {
+        console.error('[BOT] Errore connessione a Discord:', err.message);
+    });
+} else {
+    console.log('[BOT] DISCORD_BOT_TOKEN non trovato. Il bot non si connetterà.');
+}
 
 
 // API — stato reale utente Discord
@@ -152,8 +151,8 @@ app.get('/callback', async (req, res) => {
 app.get('/api/discord-user/:id', async (req, res) => {
     const userId = req.params.id;
 
-    if (DISCORD_BOT_TOKEN === 'METTI_QUI_IL_TOKEN_VERO') {
-        return res.status(500).json({ error: 'Hai dimenticato di mettere il token nel server.js!' });
+    if (!DISCORD_BOT_TOKEN) {
+        return res.status(500).json({ error: 'Token non trovato! Devi aggiungerlo nelle Environment su Render.' });
     }
 
     try {
@@ -175,7 +174,10 @@ app.get('/api/discord-user/:id', async (req, res) => {
             return res.status(404).json({ error: 'Utente Discord non trovato (ID errato?)' });
         }
         if (status === 401) {
-            return res.status(500).json({ error: 'Bot Token invalido!' });
+            return res.status(500).json({ error: 'Bot Token invalido! Controlla la Environment su Render.' });
+        }
+        if (status === 403) {
+            return res.status(500).json({ error: 'Bot senza permessi' });
         }
         console.error('[Discord User Error]', status, e.message);
         res.status(500).json({ error: 'Errore Discord: ' + status + ' - ' + (e.message || 'sconosciuto') });
