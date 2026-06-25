@@ -1,150 +1,220 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Core Lab — Home</title>
-    <link rel="stylesheet" href="../estetica/home.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-</head>
-<body>
+const express = require('express');
+const axios = require('axios');
+const cookieParser = require('cookie-parser');
+const path = require('path');
+const cors = require('cors');
+const { Client, GatewayIntentBits } = require('discord.js');
 
-    <nav>
-        <div class="nav-inner">
-            <a href="home.html" class="nav-logo">
-                <img src="https://media.discordapp.net/attachments/1356283766942863453/1518320595459379412/Core_Lab_1.png?ex=6a3b77fe&is=6a3a267e&hm=0d28c1f34d07f11e4fe8f3d3ab49758d75a74661e4ae5cad7850354e46181&=&format=webp&quality=lossless&width=450&height=450" alt="Logo" class="nav-logo-img">
-                <span>Core Lab</span>
-            </a>
-            <div class="nav-links" id="navLinks">
-                <a href="home.html" class="active"><i class="fa-solid fa-house"></i> Home</a>
-                <a href="prodotti.html"><i class="fa-solid fa-box"></i> Prodotti</a>
-                <a href="developer.html"><i class="fa-solid fa-code"></i> Developer</a>
-                <a href="recensioni.html"><i class="fa-solid fa-star"></i> Recensioni</a>
-                <a href="assistenza.html"><i class="fa-solid fa-headset"></i> Assistenza</a>
-            </div>
-            <div class="nav-right">
-                <div class="nav-user" id="navUser" style="display:none;">
-                    <img class="nav-avatar" id="navAvatar" src="" alt="">
-                    <span class="nav-username" id="navUsername"></span>
-                </div>
-                <button class="nav-logout" id="logoutBtn" style="display:none;" title="Logout">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </button>
-                <button class="nav-burger" id="burger">
-                    <span></span><span></span><span></span>
-                </button>
-            </div>
-        </div>
-    </nav>
+const app = express();
+app.use(cors());
+app.use(cookieParser());
+app.use(express.json());
+app.use(express.static(path.join(__dirname)));
 
-    <div class="mobile-menu" id="mobileMenu">
-        <div class="mobile-user" id="mobileUser" style="display:none;">
-            <img class="mobile-avatar" id="mobileAvatar" src="" alt="">
-            <span id="mobileUsername"></span>
-        </div>
-        <a href="home.html"><i class="fa-solid fa-house"></i> Home</a>
-        <a href="prodotti.html"><i class="fa-solid fa-box"></i> Prodotti</a>
-        <a href="developer.html"><i class="fa-solid fa-code"></i> Developer</a>
-        <a href="recensioni.html"><i class="fa-solid fa-star"></i> Recensioni</a>
-        <a href="assistenza.html"><i class="fa-solid fa-headset"></i> Assistenza</a>
-        <a href="login.html" id="mobileLogout" style="display:none;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
-    </div>
+// ========================================================
+//  CONFIGURAZIONE
+// ========================================================
+const DISCORD_CLIENT_ID     = '1518326560321573156';
+const DISCORD_CLIENT_SECRET = 'TbXZiKc3IB875PgcCwONjW77c_l47UqK';
+const DISCORD_BOT_TOKEN      = process.env.DISCORD_BOT_TOKEN || '';
+const REDIRECT_URI          = 'https://core-lab.onrender.com/callback';
+const JSONBIN_ID            = '6a3ad2d7da38895dfef34b4c';
+const JSONBIN_KEY           = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+const DISCORD_GUILD_ID      = '1518317193698218035';
 
-    <div class="bg-scene">
-        <div class="bg-orb o1"></div>
-        <div class="bg-orb o2"></div>
-        <div class="bg-orb o3"></div>
-        <div class="bg-grain"></div>
-    </div>
 
-    <header class="hero">
-        <div class="hero-inner">
-            <div class="hero-badge">
-                <span class="badge-dot"></span>
-                online ora
-            </div>
+// ========================================================
+//  HEARTBEAT — Utenti online in tempo reale
+// ========================================================
+var heartbeats = {}; // { userId: lastTimestamp }
 
-            <div class="hero-user">
-                <img class="hero-avatar" id="heroAvatar" src="" alt="">
-                <h1>Benvenuto, <span class="v" id="heroName">—</span></h1>
-            </div>
+// Pulisci quelli inattivi da più di 60 secondi
+setInterval(function() {
+    var now = Date.now();
+    for (var id in heartbeats) {
+        if (now - heartbeats[id] > 60000) {
+            delete heartbeats[id];
+        }
+    }
+}, 30000);
 
-            <p class="hero-desc" id="heroDesc">Prodotti per Roblox, fatti bene. Niente scam, niente cazzate.</p>
+// Invia heartbeat
+app.post('/api/heartbeat', (req, res) => {
+    var userId = req.body.userId;
+    if (userId) {
+        heartbeats[userId] = Date.now();
+    }
+    res.json({ ok: true, online: Object.keys(heartbeats).length });
+});
 
-            <div class="stats-bin">
-                <div class="stat-block">
-                    <div class="stat-num"><span class="num" id="statUsers">0</span></div>
-                    <div class="stat-label">utenti registrati</div>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-block">
-                    <div class="stat-num"><span class="num" id="statOnline">0</span></div>
-                    <div class="stat-label">online adesso</div>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-block">
-                    <div class="stat-num"><span class="num" id="statSales">0</span></div>
-                    <div class="stat-label">prodotti venduti</div>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-block">
-                    <div class="stat-num"><span class="num" id="statReviews">0</span></div>
-                    <div class="stat-label">recensioni</div>
-                </div>
-            </div>
-        </div>
-    </header>
+// Leggi quanti sono online
+app.get('/api/online-count', (req, res) => {
+    var now = Date.now();
+    var count = 0;
+    for (var id in heartbeats) {
+        if (now - heartbeats[id] <= 60000) {
+            count++;
+        }
+    }
+    res.json({ online: count });
+});
 
-    <section id="info">
-        <div class="sec-inner">
-            <div class="sec-head">
-                <h2>Cosa offriamo</h2>
-                <p>Tutto quello che ti serve, in un posto solo</p>
-            </div>
-            <div class="info-grid">
-                <div class="info-card scroll-in">
-                    <div class="info-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                    <h3>Sicuro</h3>
-                    <p>Script testati e sicuri. Nessun rischio per il tuo account.</p>
-                </div>
-                <div class="info-card scroll-in">
-                    <div class="info-icon"><i class="fa-solid fa-rotate"></i></div>
-                    <h3>Aggiornato</h3>
-                    <p>Aggiorniamo entro poche ore dopo ogni patch di Roblox.</p>
-                </div>
-                <div class="info-card scroll-in">
-                    <div class="info-icon"><i class="fa-solid fa-headset"></i></div>
-                    <h3>Supporto</h3>
-                    <p>Apri un ticket su Discord, rispondiamo in pochi minuti.</p>
-                </div>
-                <div class="info-card scroll-in">
-                    <div class="info-icon"><i class="fa-solid fa-bolt"></i></div>
-                    <h3>Veloce</h3>
-                    <p>Acquista, scarica, usa. Tutto in meno di un minuto.</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <footer>
-        <div class="footer-inner">
-            <div class="footer-left">
-                <img src="https://media.discordapp.net/attachments/1356283766942863453/1518320595459379412/Core_Lab_1.png?ex=6a3b77fe&is=6a3a267e&hm=0d28c1f34d07f11e4fe8f3d3ab49758d75a74661e4ae5cad7850354e46181&=&format=webp&quality=lossless&width=450&height=450" alt="Logo" class="footer-logo-img">
-                <span>Core Lab</span>
-            </div>
-            <div class="footer-mid">
-                <a href="home.html">Home</a>
-                <a href="prodotti.html">Prodotti</a>
-                <a href="developer.html">Developer</a>
-                <a href="recensioni.html">Recensioni</a>
-            </div>
-            <div class="footer-right">
-                <span>© 2025 Core Lab</span>
-            </div>
-        </div>
-    </footer>
+// ========================================================
+//  CONNESSIONE BOT DISCORD
+// ========================================================
+const discordClient = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildPresences
+    ]
+});
 
-    <script src="../script/home.js?v=2"></script>
-</body>
-</html>
+discordClient.once('ready', () => {
+    console.log('[BOT] Connesso a Discord come ' + discordClient.user.tag);
+});
+
+if (DISCORD_BOT_TOKEN) {
+    discordClient.login(DISCORD_BOT_TOKEN).catch(err => {
+        console.error('[BOT] Errore connessione a Discord:', err.message);
+    });
+} else {
+    console.log('[BOT] DISCORD_BOT_TOKEN non trovato.');
+}
+
+
+// API — stato reale utente Discord
+app.get('/api/discord-presence/:id', async (req, res) => {
+    const userId = req.params.id;
+    if (!discordClient.isReady()) return res.json({ status: 'offline' });
+    try {
+        const guild = discordClient.guilds.cache.get(DISCORD_GUILD_ID);
+        if (!guild) return res.json({ status: 'offline' });
+        const member = await guild.members.fetch(userId).catch(() => null);
+        if (member && member.presence && member.presence.status) {
+            return res.json({ status: member.presence.status });
+        }
+        return res.json({ status: 'offline' });
+    } catch (e) {
+        return res.json({ status: 'offline' });
+    }
+});
+
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+
+app.get('/callback', async (req, res) => {
+    const code = req.query.code;
+    if (!code) return res.redirect('https://ilgladiatore22.github.io/core-lab/html/login.html?error=1');
+
+    try {
+        const tokenRes = await axios.post(
+            'https://discord.com/api/oauth2/token',
+            new URLSearchParams({
+                client_id: DISCORD_CLIENT_ID,
+                client_secret: DISCORD_CLIENT_SECRET,
+                grant_type: 'authorization_code',
+                code: code,
+                redirect_uri: REDIRECT_URI
+            }),
+            { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+        );
+
+        const userRes = await axios.get('https://discord.com/api/users/@me', {
+            headers: { Authorization: 'Bearer ' + tokenRes.data.access_token }
+        });
+
+        const u = userRes.data;
+        const avatarUrl = u.avatar
+            ? 'https://cdn.discordapp.com/avatars/' + u.id + '/' + u.avatar + '.png'
+            : 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+        const binRes = await axios.get('https://api.jsonbin.io/v3/b/' + JSONBIN_ID + '/latest', {
+            headers: { 'X-Master-Key': JSONBIN_KEY }
+        });
+
+        const data = binRes.data.record;
+        const idx = data.users.findIndex(function(user) { return user.id === u.id; });
+
+        if (idx === -1) {
+            data.users.push({
+                id: u.id,
+                username: u.username,
+                globalName: u.global_name || u.username,
+                avatar: avatarUrl,
+                firstLogin: Date.now(),
+                lastLogin: Date.now(),
+                purchases: 0
+            });
+            data.stats.totalUsers = (data.stats.totalUsers || 0) + 1;
+            data.recentActivity.unshift({
+                username: u.global_name || u.username,
+                avatar: avatarUrl,
+                action: 'è entrato nel server',
+                type: 'join',
+                timestamp: Date.now()
+            });
+            if (data.recentActivity.length > 20) data.recentActivity = data.recentActivity.slice(0, 20);
+        } else {
+            data.users[idx].lastLogin = Date.now();
+            data.users[idx].avatar = avatarUrl;
+            data.users[idx].username = u.username;
+            data.users[idx].globalName = u.global_name || u.username;
+        }
+
+        await axios.put('https://api.jsonbin.io/v3/b/' + JSONBIN_ID, data, {
+            headers: { 'X-Master-Key': JSONBIN_KEY, 'Content-Type': 'application/json' }
+        });
+
+        res.cookie('corelab_uid', u.id, { maxAge: 7*24*60*60*1000, path: '/', sameSite: 'Lax' });
+        res.redirect('https://ilgladiatore22.github.io/core-lab/index.html?uid=' + u.id);
+
+    } catch (err) {
+        console.error('Errore OAuth:', err.response ? err.response.data : err.message);
+        res.redirect('https://ilgladiatore22.github.io/core-lab/html/login.html?error=1');
+    }
+});
+
+
+// API — prende info utente Discord per ID
+app.get('/api/discord-user/:id', async (req, res) => {
+    const userId = req.params.id;
+    if (!DISCORD_BOT_TOKEN) {
+        return res.status(500).json({ error: 'Token non trovato nelle Environment su Render.' });
+    }
+    try {
+        const userRes = await axios.get('https://discord.com/api/users/' + userId, {
+            headers: { Authorization: 'Bot ' + DISCORD_BOT_TOKEN }
+        });
+        const u = userRes.data;
+        res.json({
+            id: u.id,
+            username: u.username,
+            globalName: u.global_name || u.username,
+            avatar: u.avatar
+                ? 'https://cdn.discordapp.com/avatars/' + u.id + '/' + u.avatar + '.png'
+                : 'https://cdn.discordapp.com/embed/avatars/0.png'
+        });
+    } catch (e) {
+        var status = e.response ? e.response.status : 0;
+        if (status === 404) return res.status(404).json({ error: 'Utente Discord non trovato' });
+        if (status === 401) return res.status(500).json({ error: 'Bot Token invalido!' });
+        res.status(500).json({ error: 'Errore Discord: ' + status });
+    }
+});
+
+
+app.get('/logout', (req, res) => {
+    res.clearCookie('corelab_uid', { path: '/' });
+    res.redirect('https://ilgladiatore22.github.io/core-lab/html/login.html');
+});
+
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log('Server avviato sulla porta ' + PORT);
+});
