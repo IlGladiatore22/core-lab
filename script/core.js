@@ -14,7 +14,6 @@ var RENDER_URL   = 'https://core-lab.onrender.com';
 var mainData = null;
 var siteSettings = { siteName: 'Core Lab', siteDesc: '', discordLink: '' };
 
-
 // ===== IMPOSTAZIONI SITO =====
 async function loadSiteSettings() {
     try {
@@ -37,7 +36,6 @@ function applySettings() {
     });
     document.title = document.title.replace('Core Lab', siteSettings.siteName);
 }
-
 
 // ===== GESTIONE UTENTE =====
 function initUser(requireAdmin, callback) {
@@ -125,7 +123,6 @@ function doLogout() {
     window.location.href = 'login.html';
 }
 
-
 // ===== BURGER MENU =====
 (function() {
     var burger = document.getElementById('burger');
@@ -146,7 +143,6 @@ function doLogout() {
         });
     });
 })();
-
 
 // ===== UTILITÀ GLOBALI =====
 function esc(s) { var d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
