@@ -1,7 +1,9 @@
-var BIN_ID  = '6a3ad2d7da38895dfef34b4c';
-var API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
-var BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest';
-var RENDER_URL = 'https://core-lab.onrender.com';
+var BIN_ID       = '6a3ad2d7da38895dfef34b4c';
+var REVIEWS_ID   = '6a3b343bda38895dfef4de16';
+var API_KEY      = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+var BIN_URL      = 'https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest';
+var REVIEWS_URL  = 'https://api.jsonbin.io/v3/b/' + REVIEWS_ID + '/latest';
+var RENDER_URL   = 'https://core-lab.onrender.com';
 
 var siteData = null;
 var currentUserId = null;
@@ -85,7 +87,7 @@ function showUser(u) {
 }
 
 
-// ===== HEARTBEAT — Utenti online in tempo reale =====
+// ===== HEARTBEAT — Online in tempo reale =====
 function sendHeartbeat() {
     if (!currentUserId) return;
     try {
@@ -113,13 +115,11 @@ async function fetchOnlineCount() {
     } catch (e) {}
 }
 
-// Invia heartbeat ogni 15 secondi
 setInterval(sendHeartbeat, 15000);
-// Aggiorna contatore online ogni 10 secondi
 setInterval(fetchOnlineCount, 10000);
 
 
-// ===== CARICA DATI E IMPOSTAZIONI =====
+// ===== CARICA DATI PRINCIPALI =====
 async function loadSiteData() {
     try {
         var res = await fetch(BIN_URL, { headers: { 'X-Master-Key': API_KEY } });
@@ -145,10 +145,6 @@ async function loadSiteData() {
         var stats = siteData.stats || {};
         animateNum('statUsers', stats.totalUsers || 0);
         animateNum('statSales', stats.totalSales || 0);
-        animateNum('statReviews', (siteData.reviews || []).length);
-
-        // Recensioni sulla home
-        renderHomeReviews(siteData.reviews || []);
 
     } catch (e) {
         console.error('Errore caricamento dati:', e.message);
@@ -156,12 +152,26 @@ async function loadSiteData() {
 }
 
 
-// ===== RECENSIONI HOME =====
+// ===== CARICA RECENSIONI DAL BIN SEPARATO =====
+async function loadReviews() {
+    try {
+        var res = await fetch(REVIEWS_URL, { headers: { 'X-Master-Key': API_KEY } });
+        if (!res.ok) return;
+        var data = (await res.json()).record;
+        var reviews = data.reviews || [];
+        renderHomeReviews(reviews);
+    } catch (e) {
+        console.error('Errore caricamento recensioni:', e.message);
+    }
+}
+
+
+// ===== RENDER RECENSIONI =====
 function renderHomeReviews(reviews) {
     var grid = document.getElementById('homeReviewsGrid');
     if (!grid) return;
 
-    // Aggiorna contatore recensioni
+    // Aggiorna contatore
     var revCount = document.getElementById('statReviews');
     if (revCount) animateNum('statReviews', reviews.length);
 
@@ -204,7 +214,6 @@ function renderHomeReviews(reviews) {
         grid.appendChild(card);
     });
 
-    // Riattiva scroll animations per le nuove card
     initScrollAnimations();
 }
 
@@ -212,14 +221,13 @@ function renderHomeReviews(reviews) {
 // ===== AGGIORNAMENTO PERIODICO RECENSIONI =====
 async function refreshReviews() {
     try {
-        var res = await fetch(BIN_URL, { headers: { 'X-Master-Key': API_KEY } });
+        var res = await fetch(REVIEWS_URL, { headers: { 'X-Master-Key': API_KEY } });
         if (!res.ok) return;
         var data = (await res.json()).record;
         renderHomeReviews(data.reviews || []);
     } catch (e) {}
 }
 
-// Ogni 30 secondi ricarica le recensioni dal DB
 setInterval(refreshReviews, 30000);
 
 
@@ -304,10 +312,9 @@ function esc(s) {
 
 // ===== START =====
 initUser();
-loadSiteData().then(function() {
-    // Primo heartbeat dopo che l'utente è caricato
+loadSiteData();
+loadReviews().then(function() {
     sendHeartbeat();
-    // Prima lettura online
     fetchOnlineCount();
 });
 initScrollAnimations();
