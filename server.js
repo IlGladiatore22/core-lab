@@ -11,19 +11,19 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname)));
 
 // ========================================================
-//  CONFIGURAZIONE
+//  CONFIGURAZIONE — I segreti stanno nelle ENV di Render
 // ========================================================
-const DISCORD_CLIENT_ID     = '1518326560321573156';
-const DISCORD_CLIENT_SECRET = 'TbXZiKc3IB875PgcCwONjW77c_l47UqK';
-const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN || '';
+const DISCORD_CLIENT_ID     = process.env.DISCORD_CLIENT_ID || '1518326560321573156';
+const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || 'TbXZiKc3IB875PgcCwONjW77c_l47UqK';
+const DISCORD_BOT_TOKEN      = process.env.DISCORD_BOT_TOKEN || '';
 const REDIRECT_URI          = 'https://core-lab.onrender.com/callback';
 const JSONBIN_ID            = '6a3ad2d7da38895dfef34b4c';
-const JSONBIN_KEY           = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
+const JSONBIN_KEY           = process.env.JSONBIN_KEY || '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 const DISCORD_GUILD_ID      = '1518317193698218035';
 
 
 // ========================================================
-//  CONNESSIONE REALE BOT DISCORD (Per lo stato online)
+//  CONNESSIONE BOT DISCORD
 // ========================================================
 const discordClient = new Client({
     intents: [
@@ -37,9 +37,13 @@ discordClient.once('ready', () => {
     console.log('[BOT] Connesso a Discord come ' + discordClient.user.tag);
 });
 
-discordClient.login(DISCORD_BOT_TOKEN).catch(err => {
-    console.error('[BOT] Errore connessione a Discord:', err.message);
-});
+if (DISCORD_BOT_TOKEN) {
+    discordClient.login(DISCORD_BOT_TOKEN).catch(err => {
+        console.error('[BOT] Errore connessione a Discord:', err.message);
+    });
+} else {
+    console.error('[BOT] DISCORD_BOT_TOKEN non impostato!');
+}
 
 
 // API — stato reale utente Discord
@@ -131,7 +135,6 @@ app.get('/callback', async (req, res) => {
         });
 
         res.cookie('corelab_uid', u.id, { maxAge: 7*24*60*60*1000, path: '/', sameSite: 'Lax' });
-        
         res.redirect('https://ilgladiatore22.github.io/core-lab/index.html?uid=' + u.id);
 
     } catch (err) {
@@ -144,9 +147,11 @@ app.get('/callback', async (req, res) => {
 // API — prende info utente Discord per ID
 app.get('/api/discord-user/:id', async (req, res) => {
     const userId = req.params.id;
-    if (!userId || !DISCORD_BOT_TOKEN) {
-        return res.status(500).json({ error: 'Bot token non configurato' });
+
+    if (!DISCORD_BOT_TOKEN) {
+        return res.status(500).json({ error: 'Bot Token non impostato nelle Environment Variables di Render' });
     }
+
     try {
         const userRes = await axios.get('https://discord.com/api/users/' + userId, {
             headers: { Authorization: 'Bot ' + DISCORD_BOT_TOKEN }
@@ -166,7 +171,7 @@ app.get('/api/discord-user/:id', async (req, res) => {
             return res.status(404).json({ error: 'Utente Discord non trovato (ID errato?)' });
         }
         if (status === 401) {
-            return res.status(500).json({ error: 'Bot Token scaduto o invalido! Rigeneralo' });
+            return res.status(500).json({ error: 'Bot Token invalido! Controlla la Environment Variable su Render' });
         }
         if (status === 403) {
             return res.status(500).json({ error: 'Bot senza permessi' });
