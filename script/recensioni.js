@@ -138,6 +138,7 @@ function starsHtml(rating) {
 
 
 // ===== CARICA RECENSIONI =====
+// ===== CARICA RECENSIONI =====
 async function loadReviews() {
     var grid = document.getElementById('reviewsGrid');
     try {
@@ -167,15 +168,12 @@ async function loadReviews() {
             card.className = 'review-card scroll-in';
             card.style.transitionDelay = (i * 0.08) + 's';
 
+            // Nuovo ordine: Avatar -> Nome -> Testo -> Stelle
             card.innerHTML =
-                '<div class="review-card-top">' +
-                    '<img class="review-card-avatar" src="' + esc(cardAvatar) + '" alt="" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'">' +
-                    '<div class="review-card-info">' +
-                        '<div class="review-card-name">' + esc(cardUsername) + '</div>' +
-                        '<div class="review-card-stars">' + starsHtml(cardRating) + '</div>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="review-card-bottom">' + cardText + '</div>';
+                '<img class="review-card-avatar" src="' + esc(cardAvatar) + '" alt="" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'">' +
+                '<div class="review-card-name">' + esc(cardUsername) + '</div>' +
+                '<div class="review-card-text">' + cardText + '</div>' +
+                '<div class="review-card-stars">' + starsHtml(cardRating) + '</div>';
 
             grid.appendChild(card);
         });
