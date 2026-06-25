@@ -35,6 +35,43 @@ var REVIEWS_URL  = 'https://api.jsonbin.io/v3/b/' + REVIEWS_ID + '/latest';
 var ICON_ROBUX  = '<img src="https://cdn.discordapp.com/emojis/1518427187894550588.png" class="price-icon">';
 var ICON_PAYPAL = '<img src="https://cdn.discordapp.com/emojis/1518427263455068201.png" class="price-icon">';
 
+
+// ===== GESTIONE CARRELLO =====
+function getCart() {
+    try { return JSON.parse(localStorage.getItem('corelab_cart')) || []; } catch(e) { return []; }
+}
+
+function saveCart(cart) {
+    localStorage.setItem('corelab_cart', JSON.stringify(cart));
+}
+
+function addToCart(product) {
+    var cart = getCart();
+    var exists = cart.find(function(p) { return p.name === product.name; });
+    if (exists) {
+        showToast('Prodotto già nel carrello', 'error');
+        return;
+    }
+    cart.push({
+        name: product.name,
+        price: product.price || '',
+        priceRbx: product.priceRbx || '',
+        image: product.image || ''
+    });
+    saveCart(cart);
+    updateCartCount();
+    showToast('Aggiunto al carrello!', 'success');
+}
+
+function updateCartCount() {
+    var cart = getCart();
+    document.querySelectorAll('.cart-count').forEach(function(el) {
+        el.textContent = cart.length;
+        el.style.display = cart.length > 0 ? 'flex' : 'none';
+    });
+}
+
+
 // ===== UTENTE =====
 function initUser() {
     var u = null;
@@ -97,6 +134,7 @@ function showUser(u) {
 
 function esc(s) { var d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
 function formatDate(ts) { if(!ts)return ''; var d=new Date(ts); return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear(); }
+
 
 // ===== MODALE =====
 var modalOverlay = null;
@@ -164,6 +202,7 @@ function closeModal() {
     document.body.style.overflow = '';
 }
 
+
 // ===== RENDER PRODOTTI =====
 function renderProducts(products) {
     var pg = document.getElementById('productsGrid');
@@ -199,18 +238,21 @@ function renderProducts(products) {
                     creatorHtml +
                     (p.sold ? '<span class="prod-sold">' + p.sold + ' venduti</span>' : '') +
                 '</div>' +
-                '<a href="carrello.html" class="btn-cart"><i class="fa-solid fa-cart-plus"></i> Aggiungi al carrello</a>' +
+                '<button class="btn-cart"><i class="fa-solid fa-cart-plus"></i> Aggiungi al carrello</button>' +
             '</div>';
 
-        // Click per aprire la modale, MA se clicco sul bottone carrello non fa niente (permette il link di funzionare)
         div.addEventListener('click', function(e) {
-            if (e.target.closest('.btn-cart')) return; 
+            if (e.target.closest('.btn-cart')) {
+                addToCart(p);
+                return;
+            }
             openModal(p);
         });
         
         pg.appendChild(div);
     });
 }
+
 
 // ===== RENDER RECENSIONI =====
 function renderReviews(revs) {
@@ -293,4 +335,7 @@ async function loadPage() {
 }
 
 // ===== START =====
-if (initUser()) loadPage();
+if (initUser()) {
+    updateCartCount(); // Fai partire il contatore del carrello
+    loadPage();
+}
