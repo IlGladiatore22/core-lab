@@ -15,7 +15,7 @@ app.use(express.static(path.join(__dirname)));
 // ========================================================
 const DISCORD_CLIENT_ID     = '1518326560321573156';
 const DISCORD_CLIENT_SECRET = 'TbXZiKc3IB875PgcCwONjW77c_l47UqK';
-const DISCORD_BOT_TOKEN      = 'MTUxODMyNjU2MDMyMTU3MzE1Ng.Gpp7Qd.af689yPPFehlTikY2cOqz88GBhEXV4Z_7FNsp8';
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN || '';
 const REDIRECT_URI          = 'https://core-lab.onrender.com/callback';
 const JSONBIN_ID            = '6a3ad2d7da38895dfef34b4c';
 const JSONBIN_KEY           = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
