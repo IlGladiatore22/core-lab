@@ -11,6 +11,31 @@ var developers = [];
 var currentTags = [];
 
 
+// ===== BURGER (ISOLATO PER FUNZIONARE SEMPRE) =====
+function initBurger() {
+    var burger = document.getElementById('burger');
+    var mobileMenu = document.getElementById('mobileMenu');
+    if (!burger || !mobileMenu) return;
+    burger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        mobileMenu.classList.toggle('open');
+        var s = burger.querySelectorAll('span');
+        var o = mobileMenu.classList.contains('open');
+        s[0].style.transform = o ? 'rotate(45deg) translate(4px,4px)' : '';
+        s[1].style.opacity = o ? '0' : '1';
+        s[2].style.transform = o ? 'rotate(-45deg) translate(4px,-4px)' : '';
+    });
+    mobileMenu.querySelectorAll('a').forEach(function(a) {
+        a.addEventListener('click', function() {
+            mobileMenu.classList.remove('open');
+            var s = burger.querySelectorAll('span');
+            s[0].style.transform = ''; s[1].style.opacity = '1'; s[2].style.transform = '';
+        });
+    });
+}
+
+
+// ===== UTENTE =====
 function initUser() {
     var u = null;
     try {
@@ -89,26 +114,6 @@ function showUser(u) {
         localStorage.removeItem('corelab_user');
         document.cookie = 'corelab_uid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         window.location.href = 'login.html';
-    });
-}
-
-
-var burger = document.getElementById('burger');
-var mobileMenu = document.getElementById('mobileMenu');
-if (burger && mobileMenu) {
-    burger.addEventListener('click', function() {
-        mobileMenu.classList.toggle('open');
-        var s = burger.querySelectorAll('span');
-        var o = mobileMenu.classList.contains('open');
-        s[0].style.transform = o ? 'rotate(45deg) translate(4px,4px)' : '';
-        s[1].style.opacity = o ? '0' : '1';
-        s[2].style.transform = o ? 'rotate(-45deg) translate(4px,-4px)' : '';
-    });
-    mobileMenu.querySelectorAll('a').forEach(function(a) {
-        a.addEventListener('click', function() {
-            mobileMenu.classList.remove('open');
-            burger.querySelectorAll('span').forEach(function(s) { s.style.transform=''; s.style.opacity='1'; });
-        });
     });
 }
 
@@ -307,26 +312,15 @@ fetchBtn.addEventListener('click', async function() {
     var idField = document.getElementById('devDiscordId');
     var userId = idField.value.trim();
 
-    if (!userId) {
-        showToast('Inserisci un Discord ID', 'error');
-        idField.focus();
-        return;
-    }
-
-    if (!/^\d+$/.test(userId)) {
-        showToast('Il Discord ID deve contenere solo numeri', 'error');
-        return;
-    }
+    if (!userId) { showToast('Inserisci un Discord ID', 'error'); idField.focus(); return; }
+    if (!/^\d+$/.test(userId)) { showToast('Il Discord ID deve contenere solo numeri', 'error'); return; }
 
     hideDiscordPreview();
     fetchBtn.classList.add('loading');
 
     try {
         var url = RENDER_URL + '/api/discord-user/' + encodeURIComponent(userId);
-        console.log('[Fetch] URL:', url);
-
         var res = await fetch(url);
-
         if (!res.ok) {
             var errData = null;
             try { errData = await res.json(); } catch(e) {}
@@ -334,25 +328,16 @@ fetchBtn.addEventListener('click', async function() {
             showDiscordError(errMsg);
             return;
         }
-
         var data = await res.json();
-
-        if (data.error) {
-            showDiscordError(data.error);
-            return;
-        }
+        if (data.error) { showDiscordError(data.error); return; }
 
         document.getElementById('devName').value = data.globalName || data.username || '';
         document.getElementById('devAvatar').value = data.avatar || '';
-
-        var preview = document.getElementById('discordPreview');
         document.getElementById('discordPreviewAv').src = data.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
         document.getElementById('discordPreviewName').textContent = data.globalName || data.username || '';
         document.getElementById('discordPreviewId').textContent = data.id || userId;
-        preview.style.display = 'flex';
-
+        document.getElementById('discordPreview').style.display = 'flex';
     } catch(e) {
-        console.error('[Fetch] Errore:', e);
         showDiscordError('Errore di connessione al server');
     } finally {
         fetchBtn.classList.remove('loading');
@@ -377,21 +362,17 @@ function hideDiscordPreview() {
 
 document.getElementById('saveDevBtn').addEventListener('click', async function() {
     var name = document.getElementById('devName').value.trim();
-    var role = document.getElementById('devRole').value.trim();
-    var discordId = document.getElementById('devDiscordId').value.trim();
-    var avatar = document.getElementById('devAvatar').value.trim();
-    var idx = parseInt(document.getElementById('devEditIndex').value);
-
     if (!name) { showToast('Inserisci il nome', 'error'); return; }
 
     var devObj = {
         name: name,
-        role: role || 'Developer',
-        discordId: discordId || '',
-        avatar: avatar || 'https://cdn.discordapp.com/embed/avatars/0.png',
+        role: document.getElementById('devRole').value.trim() || 'Developer',
+        discordId: document.getElementById('devDiscordId').value.trim(),
+        avatar: document.getElementById('devAvatar').value.trim() || 'https://cdn.discordapp.com/embed/avatars/0.png',
         tags: currentTags.slice()
     };
 
+    var idx = parseInt(document.getElementById('devEditIndex').value);
     if (idx === -1) { developers.push(devObj); } else { developers[idx] = devObj; }
     mainData.developers = developers;
 
@@ -404,8 +385,7 @@ document.getElementById('saveDevBtn').addEventListener('click', async function()
 });
 
 async function deleteDev(idx) {
-    var name = developers[idx].name;
-    if (!confirm('Eliminare ' + name + '?')) return;
+    if (!confirm('Eliminare ' + developers[idx].name + '?')) return;
     developers.splice(idx, 1);
     mainData.developers = developers;
     try {
@@ -436,7 +416,6 @@ document.getElementById('saveSettingsBtn').addEventListener('click', async funct
     try {
         await saveBin();
         
-        // FIX: Aggiorna il nome nel navbar e nel titolo della pagina in tempo reale
         var newName = mainData.settings.siteName || 'Core Lab';
         document.querySelectorAll('.nav-logo span').forEach(function(span) {
             span.textContent = newName;
@@ -467,4 +446,6 @@ function showToast(msg, type) {
 }
 
 
+// ===== START =====
+initBurger();
 initUser();
