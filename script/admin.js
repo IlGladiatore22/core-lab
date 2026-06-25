@@ -4,6 +4,9 @@ var API_KEY     = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S'
 var BIN_URL      = 'https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest';
 var PRODUCTS_URL = 'https://api.jsonbin.io/v3/b/' + PRODUCTS_ID + '/latest';
 
+// >>> LINK DEL TUO SERVER RENDER (FONDAMENTALE PER L'ADMIN) <<<
+var RENDER_URL = 'https://core-lab.onrender.com';
+
 var mainData = null;
 var developers = [];
 var currentTags = [];
@@ -80,7 +83,7 @@ function showUser(u) {
     if (lo) lo.addEventListener('click', function() {
         localStorage.removeItem('corelab_user');
         document.cookie = 'corelab_uid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        window.location.href = '/logout';
+        window.location.href = 'login.html';
     });
 }
 
@@ -331,7 +334,7 @@ function renderTags() {
 }
 
 
-// ===== DISCORD FETCH =====
+// ===== DISCORD FETCH (CORRETTO PER RENDER) =====
 var fetchBtn = document.getElementById('fetchDiscordBtn');
 
 fetchBtn.addEventListener('click', async function() {
@@ -348,7 +351,8 @@ fetchBtn.addEventListener('click', async function() {
     fetchBtn.classList.add('loading');
 
     try {
-        var res = await fetch('/api/discord-user/' + userId);
+        // >>> FIX: USA RENDER_URL INVECE DI /api/... <<<
+        var res = await fetch(RENDER_URL + '/api/discord-user/' + userId);
         var data = await res.json();
 
         if (data.error) {
