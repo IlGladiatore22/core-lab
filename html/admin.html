@@ -69,14 +69,12 @@
                 <div class="admin-badge">ADMIN</div>
             </div>
 
-            <!-- TABS -->
             <div class="admin-tabs">
                 <button class="tab active" data-tab="developers"><i class="fa-solid fa-users-gear"></i> Developer</button>
                 <button class="tab" data-tab="activity"><i class="fa-solid fa-arrow-right-to-bracket"></i> Attività</button>
                 <button class="tab" data-tab="settings"><i class="fa-solid fa-gear"></i> Impostazioni</button>
             </div>
 
-            <!-- TAB: DEVELOPERS -->
             <div class="tab-content active" id="tab-developers">
                 <div class="section-bar">
                     <h2>Team Developer</h2>
@@ -84,18 +82,15 @@
                         <i class="fa-solid fa-plus"></i> Aggiungi Developer
                     </button>
                 </div>
-
                 <div class="dev-list" id="devList">
                     <div class="recent-empty">caricamento...</div>
                 </div>
             </div>
 
-            <!-- TAB: ATTIVITÀ RECENTE -->
             <div class="tab-content" id="tab-activity">
                 <div class="section-bar">
                     <h2>Attività Recente</h2>
                 </div>
-
                 <div class="activity-bin">
                     <div class="activity-list" id="activityList">
                         <div class="recent-empty">caricamento...</div>
@@ -103,12 +98,10 @@
                 </div>
             </div>
 
-            <!-- TAB: SETTINGS -->
             <div class="tab-content" id="tab-settings">
                 <div class="section-bar">
                     <h2>Impostazioni Sito</h2>
                 </div>
-
                 <div class="settings-card">
                     <div class="setting-group">
                         <label>Nome Sito</label>
@@ -135,7 +128,6 @@
         </div>
     </main>
 
-    <!-- MODALE AGGIUNGI/MODIFICA DEVELOPER -->
     <div class="modal-overlay" id="devModal">
         <div class="modal-card">
             <button class="modal-close" id="devModalClose"><i class="fa-solid fa-xmark"></i></button>
@@ -153,7 +145,6 @@
                     <span class="setting-hint">Inserisci l'ID Discord per recuperare automaticamente nome e avatar</span>
                 </div>
 
-                <!-- Anteprima Discord -->
                 <div class="discord-preview" id="discordPreview" style="display:none;">
                     <img class="discord-preview-av" id="discordPreviewAv" src="" alt="">
                     <div class="discord-preview-info">
@@ -165,7 +156,6 @@
                     </div>
                 </div>
 
-                <!-- Errore fetch -->
                 <div class="discord-error" id="discordError" style="display:none;">
                     <i class="fa-solid fa-circle-exclamation"></i>
                     <span id="discordErrorMsg">Utente non trovato</span>
@@ -215,10 +205,8 @@
         </div>
     </div>
 
-    <!-- TOAST -->
     <div class="toast" id="toast"></div>
 
-    <!-- CACHE BUSTING: cambia il numero se aggiorni il JS -->
-    <script src="../script/admin.js?v=3"></script>
+    <script src="../script/admin.js?v=4"></script>
 </body>
 </html>
