@@ -19,7 +19,7 @@ const DISCORD_CLIENT_SECRET = 'TbXZiKc3IB875PgcCwONjW77c_l47UqK';
 // ========================================================
 //  ⬇️⬇️⬇️  METTI QUI IL TUO BOT TOKEN VERO  ⬇️⬇️⬇️
 // ========================================================
-const DISCORD_BOT_TOKEN      = 'METTI_QUI_IL_TOKEN_VERO';
+const DISCORD_BOT_TOKEN      = 'MTUxODMyNjU2MDMyMTU3MzE1Ng.GVmLyb.T57IUlJyLMLZe0LSZ5bQkR5nvgLGkQdNYKineI';
 // ========================================================
 //  ⬆️⬆️⬆️  DEVE INIZIARE CON MT E AVERE DUE PUNTI  ⬆️⬆️⬆️
 // ========================================================
