@@ -199,9 +199,15 @@ function renderProducts(products) {
                     creatorHtml +
                     (p.sold ? '<span class="prod-sold">' + p.sold + ' venduti</span>' : '') +
                 '</div>' +
+                '<a href="carrello.html" class="btn-cart"><i class="fa-solid fa-cart-plus"></i> Aggiungi al carrello</a>' +
             '</div>';
 
-        div.addEventListener('click', function() { openModal(p); });
+        // Click per aprire la modale, MA se clicco sul bottone carrello non fa niente (permette il link di funzionare)
+        div.addEventListener('click', function(e) {
+            if (e.target.closest('.btn-cart')) return; 
+            openModal(p);
+        });
+        
         pg.appendChild(div);
     });
 }
