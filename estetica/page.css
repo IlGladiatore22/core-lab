@@ -1158,3 +1158,66 @@ nav {
 .dev-status-text-idle i {
     font-size: .5rem !important;
 }
+
+/* === RECENSIONI CARD COMPATTE === */
+.review-card {
+    background: rgba(14, 13, 22, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(139, 92, 246, 0.08);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.review-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.review-card-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* Rende l'avatar tondo */
+    object-fit: cover;
+    border: 2px solid rgba(139, 92, 246, 0.2);
+    flex-shrink: 0;
+}
+
+.review-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.review-card-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #f1eff8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.review-card-stars {
+    font-size: 0.7rem;
+    color: #fbbf24;
+    display: flex;
+    gap: 2px;
+}
+
+.review-card-stars .fa-regular { 
+    color: rgba(251, 191, 36, 0.2); 
+}
+
+.review-card-bottom {
+    font-size: 0.75rem;
+    color: rgba(232, 230, 240, 0.5);
+    line-height: 1.4;
+    border-top: 1px solid rgba(139, 92, 246, 0.06);
+    padding-top: 10px;
+}
