@@ -1,3 +1,27 @@
+// ===== BURGER MOBILE INFALLIBILE =====
+document.addEventListener('click', function(e) {
+    var burger = e.target.closest('#burger');
+    if (burger) {
+        e.preventDefault();
+        var mobileMenu = document.getElementById('mobileMenu');
+        if (!mobileMenu) return;
+        mobileMenu.classList.toggle('open');
+        var s = burger.querySelectorAll('span');
+        var o = mobileMenu.classList.contains('open');
+        s[0].style.transform = o ? 'rotate(45deg) translate(4px,4px)' : '';
+        s[1].style.opacity = o ? '0' : '1';
+        s[2].style.transform = o ? 'rotate(-45deg) translate(4px,-4px)' : '';
+        return;
+    }
+    if (e.target.closest('#mobileMenu a')) {
+        var mobileMenu = document.getElementById('mobileMenu');
+        if (!mobileMenu) return;
+        mobileMenu.classList.remove('open');
+        var s = document.getElementById('burger').querySelectorAll('span');
+        s[0].style.transform = ''; s[1].style.opacity = '1'; s[2].style.transform = '';
+    }
+});
+
 var BIN_ID      = '6a3ad2d7da38895dfef34b4c';
 var PRODUCTS_ID = '6a3b19cbf5f4af5e29261b00';
 var API_KEY     = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
@@ -9,31 +33,6 @@ var RENDER_URL = 'https://core-lab.onrender.com';
 var mainData = null;
 var developers = [];
 var currentTags = [];
-
-
-// ===== BURGER (ISOLATO PER FUNZIONARE SEMPRE) =====
-function initBurger() {
-    var burger = document.getElementById('burger');
-    var mobileMenu = document.getElementById('mobileMenu');
-    if (!burger || !mobileMenu) return;
-    burger.addEventListener('click', function(e) {
-        e.stopPropagation();
-        mobileMenu.classList.toggle('open');
-        var s = burger.querySelectorAll('span');
-        var o = mobileMenu.classList.contains('open');
-        s[0].style.transform = o ? 'rotate(45deg) translate(4px,4px)' : '';
-        s[1].style.opacity = o ? '0' : '1';
-        s[2].style.transform = o ? 'rotate(-45deg) translate(4px,-4px)' : '';
-    });
-    mobileMenu.querySelectorAll('a').forEach(function(a) {
-        a.addEventListener('click', function() {
-            mobileMenu.classList.remove('open');
-            var s = burger.querySelectorAll('span');
-            s[0].style.transform = ''; s[1].style.opacity = '1'; s[2].style.transform = '';
-        });
-    });
-}
-
 
 // ===== UTENTE =====
 function initUser() {
@@ -119,7 +118,6 @@ function showUser(u) {
 
 function esc(s) { var d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
 
-
 document.querySelectorAll('.tab').forEach(function(tab) {
     tab.addEventListener('click', function() {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
@@ -128,7 +126,6 @@ document.querySelectorAll('.tab').forEach(function(tab) {
         document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
     });
 });
-
 
 async function loadAll() {
     try {
@@ -144,7 +141,6 @@ async function loadAll() {
         showToast('Errore caricamento dati', 'error');
     }
 }
-
 
 function renderDevelopers() {
     var list = document.getElementById('devList');
@@ -177,7 +173,6 @@ function renderDevelopers() {
         btn.addEventListener('click', function() { deleteDev(parseInt(this.dataset.idx)); });
     });
 }
-
 
 function renderActivity() {
     var list = document.getElementById('activityList');
@@ -224,7 +219,6 @@ function timeAgo(ts) {
     return mo + ' mesi fa';
 }
 
-
 var devModal = document.getElementById('devModal');
 var devModalClose = document.getElementById('devModalClose');
 var tagInput = document.getElementById('tagInput');
@@ -263,7 +257,6 @@ function openEditDev(idx) {
 }
 
 function closeDevModal() { devModal.classList.remove('open'); }
-
 
 tagInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && this.value.trim()) {
@@ -304,7 +297,6 @@ function renderTags() {
         });
     });
 }
-
 
 var fetchBtn = document.getElementById('fetchDiscordBtn');
 
@@ -359,7 +351,6 @@ function hideDiscordPreview() {
     document.getElementById('discordError').style.display = 'none';
 }
 
-
 document.getElementById('saveDevBtn').addEventListener('click', async function() {
     var name = document.getElementById('devName').value.trim();
     if (!name) { showToast('Inserisci il nome', 'error'); return; }
@@ -395,7 +386,6 @@ async function deleteDev(idx) {
     } catch(e) { showToast('Errore: ' + e.message, 'error'); }
 }
 
-
 function loadSettings() {
     if (!mainData) return;
     var s = mainData.settings || {};
@@ -426,7 +416,6 @@ document.getElementById('saveSettingsBtn').addEventListener('click', async funct
     } catch(e) { showToast('Errore: ' + e.message, 'error'); }
 });
 
-
 async function saveBin() {
     var res = await fetch('https://api.jsonbin.io/v3/b/' + BIN_ID, {
         method: 'PUT',
@@ -437,7 +426,6 @@ async function saveBin() {
     return res.json();
 }
 
-
 function showToast(msg, type) {
     var toast = document.getElementById('toast');
     toast.textContent = msg;
@@ -445,7 +433,5 @@ function showToast(msg, type) {
     setTimeout(function() { toast.classList.remove('show'); }, 2500);
 }
 
-
 // ===== START =====
-initBurger();
 initUser();
