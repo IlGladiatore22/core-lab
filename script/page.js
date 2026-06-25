@@ -1,17 +1,39 @@
 // ===== BIN CONFIG =====
-var BIN_ID      = '6a3ad2d7da38895dfef34b4c'; // bin principale (utenti, stats, developer)
-var PRODUCTS_ID = '6a3b19cbf5f4af5e29261b00'; // bin prodotti
-var REVIEWS_ID  = '6a3b343bda38895dfef4de16'; // bin recensioni
+var BIN_ID      = '6a3ad2d7da38895dfef34b4c';
+var PRODUCTS_ID = '6a3b19cbf5f4af5e29261b00';
+var REVIEWS_ID  = '6a3b343bda38895dfef4de16';
 var API_KEY     = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 
 var BIN_URL      = 'https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest';
 var PRODUCTS_URL = 'https://api.jsonbin.io/v3/b/' + PRODUCTS_ID + '/latest';
 var REVIEWS_URL  = 'https://api.jsonbin.io/v3/b/' + REVIEWS_ID + '/latest';
 
-
-// ===== ICONE =====
 var ICON_ROBUX  = '<img src="https://cdn.discordapp.com/emojis/1518427187894550588.png" class="price-icon">';
 var ICON_PAYPAL = '<img src="https://cdn.discordapp.com/emojis/1518427263455068201.png" class="price-icon">';
+
+
+// ===== BURGER (ISOLATO PER FUNZIONARE SEMPLE) =====
+function initBurger() {
+    var burger = document.getElementById('burger');
+    var mobileMenu = document.getElementById('mobileMenu');
+    if (!burger || !mobileMenu) return;
+    burger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        mobileMenu.classList.toggle('open');
+        var s = burger.querySelectorAll('span');
+        var o = mobileMenu.classList.contains('open');
+        s[0].style.transform = o ? 'rotate(45deg) translate(4px,4px)' : '';
+        s[1].style.opacity = o ? '0' : '1';
+        s[2].style.transform = o ? 'rotate(-45deg) translate(4px,-4px)' : '';
+    });
+    mobileMenu.querySelectorAll('a').forEach(function(a) {
+        a.addEventListener('click', function() {
+            mobileMenu.classList.remove('open');
+            var s = burger.querySelectorAll('span');
+            s[0].style.transform = ''; s[1].style.opacity = '1'; s[2].style.transform = '';
+        });
+    });
+}
 
 
 // ===== UTENTE =====
@@ -74,27 +96,6 @@ function showUser(u) {
     });
 }
 
-
-// ===== BURGER =====
-var burger = document.getElementById('burger');
-var mobileMenu = document.getElementById('mobileMenu');
-if (burger && mobileMenu) {
-    burger.addEventListener('click', function() {
-        mobileMenu.classList.toggle('open');
-        var s = burger.querySelectorAll('span');
-        var o = mobileMenu.classList.contains('open');
-        s[0].style.transform = o ? 'rotate(45deg) translate(4px,4px)' : '';
-        s[1].style.opacity = o ? '0' : '1';
-        s[2].style.transform = o ? 'rotate(-45deg) translate(4px,-4px)' : '';
-    });
-    mobileMenu.querySelectorAll('a').forEach(function(a) {
-        a.addEventListener('click', function() {
-            mobileMenu.classList.remove('open');
-            burger.querySelectorAll('span').forEach(function(s) { s.style.transform=''; s.style.opacity='1'; });
-        });
-    });
-}
-
 function esc(s) { var d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
 function formatDate(ts) { if(!ts)return ''; var d=new Date(ts); return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear(); }
 
@@ -119,12 +120,8 @@ function openModal(product) {
     if (!modalOverlay) createModal();
 
     var pricesHtml = '<div class="modal-prices">';
-    if (product.priceRbx) {
-        pricesHtml += '<span class="modal-price-tag">' + ICON_ROBUX + ' ' + esc(product.priceRbx) + '</span>';
-    }
-    if (product.price) {
-        pricesHtml += '<span class="modal-price-tag">' + ICON_PAYPAL + ' ' + esc(product.price) + '</span>';
-    }
+    if (product.priceRbx) pricesHtml += '<span class="modal-price-tag">' + ICON_ROBUX + ' ' + esc(product.priceRbx) + '</span>';
+    if (product.price) pricesHtml += '<span class="modal-price-tag">' + ICON_PAYPAL + ' ' + esc(product.price) + '</span>';
     pricesHtml += '</div>';
 
     var creatorHtml = '';
@@ -174,13 +171,8 @@ function closeModal() {
 function renderProducts(products) {
     var pg = document.getElementById('productsGrid');
     if (!pg) return;
-
     var prods = products.filter(function(p) { return p.active !== false; });
-
-    if (!prods.length) {
-        pg.innerHTML = '<div class="recent-empty">Nessun prodotto disponibile</div>';
-        return;
-    }
+    if (!prods.length) { pg.innerHTML = '<div class="recent-empty">Nessun prodotto disponibile</div>'; return; }
 
     pg.innerHTML = '';
     prods.forEach(function(p) {
@@ -189,12 +181,8 @@ function renderProducts(products) {
         div.style.cursor = 'pointer';
 
         var pricesHtml = '<div class="prod-prices">';
-        if (p.priceRbx) {
-            pricesHtml += '<span class="prod-price-tag">' + ICON_ROBUX + ' ' + esc(p.priceRbx) + '</span>';
-        }
-        if (p.price) {
-            pricesHtml += '<span class="prod-price-tag">' + ICON_PAYPAL + ' ' + esc(p.price) + '</span>';
-        }
+        if (p.priceRbx) pricesHtml += '<span class="prod-price-tag">' + ICON_ROBUX + ' ' + esc(p.priceRbx) + '</span>';
+        if (p.price) pricesHtml += '<span class="prod-price-tag">' + ICON_PAYPAL + ' ' + esc(p.price) + '</span>';
         pricesHtml += '</div>';
 
         var creatorHtml = '';
@@ -216,16 +204,13 @@ function renderProducts(products) {
                 '</div>' +
             '</div>';
 
-        div.addEventListener('click', function() {
-            openModal(p);
-        });
-
+        div.addEventListener('click', function() { openModal(p); });
         pg.appendChild(div);
     });
 }
 
 
-// ===== RENDER RECENSIONI (Corretto con stelle precise) =====
+// ===== RENDER RECENSIONI =====
 function renderReviews(revs) {
     var rg = document.getElementById('reviewsGrid');
     if (!rg) return;
@@ -235,13 +220,9 @@ function renderReviews(revs) {
         var starsHtml = '';
         var stelle = parseInt(r.stars) || 0;
         for(var i = 1; i <= 5; i++) {
-            if (i <= stelle) {
-                starsHtml += '<span class="rev-star rev-star-on">★</span>';
-            } else {
-                starsHtml += '<span class="rev-star rev-star-off">☆</span>';
-            }
+            if (i <= stelle) starsHtml += '<span class="rev-star rev-star-on">★</span>';
+            else starsHtml += '<span class="rev-star rev-star-off">☆</span>';
         }
-
         var div = document.createElement('div');
         div.className = 'rev-card scroll-in';
         div.innerHTML = 
@@ -293,7 +274,7 @@ function initScrollAnim() {
 }
 
 
-// ===== LOAD — carica bin principale + bin prodotti + bin recensioni =====
+// ===== LOAD =====
 async function loadPage() {
     try {
         var [mainRes, prodRes, revRes] = await Promise.all([
@@ -301,33 +282,17 @@ async function loadPage() {
             fetch(PRODUCTS_URL, { headers: { 'X-Master-Key': API_KEY } }),
             fetch(REVIEWS_URL, { headers: { 'X-Master-Key': API_KEY } })
         ]);
-
-        var mainData = null;
-        var products = [];
-        var reviews = [];
-
-        if (mainRes.ok) {
-            mainData = (await mainRes.json()).record;
-        }
-
-        if (prodRes.ok) {
-            products = (await prodRes.json()).record.products || [];
-        }
-
-        if (revRes.ok) {
-            reviews = (await revRes.json()).record.reviews || [];
-        }
-
+        var mainData = null; var products = []; var reviews = [];
+        if (mainRes.ok) mainData = (await mainRes.json()).record;
+        if (prodRes.ok) products = (await prodRes.json()).record.products || [];
+        if (revRes.ok) reviews = (await revRes.json()).record.reviews || [];
         renderProducts(products);
         renderReviews(reviews);
-        if (mainData) {
-            renderDeveloper(mainData);
-        }
-
+        if (mainData) renderDeveloper(mainData);
         setTimeout(initScrollAnim, 50);
-    } catch(e) {
-        console.error('Errore:', e.message);
-    }
+    } catch(e) { console.error('Errore:', e.message); }
 }
 
+// ===== START =====
+initBurger();
 if (initUser()) loadPage();
