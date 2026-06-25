@@ -1,8 +1,10 @@
 var BIN_ID  = '6a3ad2d7da38895dfef34b4c';
 var API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETMeO6S';
 var BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest';
+var RENDER_URL = 'https://core-lab.onrender.com';
 
 var siteData = null;
+var currentUserId = null;
 
 
 // ===== UTENTE =====
@@ -19,7 +21,6 @@ function initUser() {
             loadUserFromBin(uid);
             return;
         }
-        // Non redirectiamo su login dalla home, mostriamo dati generici
     }
 
     if (u) showUser(u);
@@ -46,6 +47,7 @@ async function loadUserFromBin(uid) {
 function showUser(u) {
     var name = u.globalName || u.username || 'Utente';
     var avatar = u.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+    currentUserId = u.id;
 
     var heroName = document.getElementById('heroName');
     var heroAvatar = document.getElementById('heroAvatar');
@@ -83,6 +85,40 @@ function showUser(u) {
 }
 
 
+// ===== HEARTBEAT — Utenti online in tempo reale =====
+function sendHeartbeat() {
+    if (!currentUserId) return;
+    try {
+        fetch(RENDER_URL + '/api/heartbeat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: currentUserId })
+        }).catch(function() {});
+    } catch (e) {}
+}
+
+async function fetchOnlineCount() {
+    try {
+        var res = await fetch(RENDER_URL + '/api/online-count');
+        if (!res.ok) return;
+        var data = await res.json();
+        var el = document.getElementById('statOnline');
+        if (el) {
+            var current = parseInt(el.textContent) || 0;
+            var target = data.online || 0;
+            if (current !== target) {
+                animateNum('statOnline', target);
+            }
+        }
+    } catch (e) {}
+}
+
+// Invia heartbeat ogni 15 secondi
+setInterval(sendHeartbeat, 15000);
+// Aggiorna contatore online ogni 10 secondi
+setInterval(fetchOnlineCount, 10000);
+
+
 // ===== CARICA DATI E IMPOSTAZIONI =====
 async function loadSiteData() {
     try {
@@ -90,18 +126,13 @@ async function loadSiteData() {
         if (!res.ok) return;
         siteData = (await res.json()).record;
 
-        // ===== APPLICA IMPOSTAZIONI =====
         var settings = siteData.settings || {};
 
         // Nome sito
         var siteName = settings.siteName || 'Core Lab';
         document.title = siteName + ' — Home';
-
-        // Cambia il nome nel nav logo
         var navLogoSpan = document.querySelector('.nav-logo span');
         if (navLogoSpan) navLogoSpan.textContent = siteName;
-
-        // Cambia il nome nel footer
         var footerSpan = document.querySelector('.footer-left span');
         if (footerSpan) footerSpan.textContent = siteName;
 
@@ -110,16 +141,14 @@ async function loadSiteData() {
         var heroDesc = document.getElementById('heroDesc');
         if (heroDesc) heroDesc.textContent = siteDesc;
 
-        // ===== STATS =====
+        // Stats
         var stats = siteData.stats || {};
-
         animateNum('statUsers', stats.totalUsers || 0);
         animateNum('statSales', stats.totalSales || 0);
-        animateNum('statReviews', stats.totalReviews || 0);
+        animateNum('statReviews', (siteData.reviews || []).length);
 
-        // Online — lo mettiamo a 1 come fallback
-        var online = stats.onlineNow || 1;
-        animateNum('statOnline', online);
+        // Recensioni sulla home
+        renderHomeReviews(siteData.reviews || []);
 
     } catch (e) {
         console.error('Errore caricamento dati:', e.message);
@@ -127,18 +156,83 @@ async function loadSiteData() {
 }
 
 
+// ===== RECENSIONI HOME =====
+function renderHomeReviews(reviews) {
+    var grid = document.getElementById('homeReviewsGrid');
+    if (!grid) return;
+
+    // Aggiorna contatore recensioni
+    var revCount = document.getElementById('statReviews');
+    if (revCount) animateNum('statReviews', reviews.length);
+
+    if (!reviews.length) {
+        grid.innerHTML = '<div class="reviews-empty"><i class="fa-solid fa-star"></i>Nessuna recensione ancora</div>';
+        return;
+    }
+
+    // Mostra le ultime 3
+    var latest = reviews.slice(0, 3);
+    grid.innerHTML = '';
+
+    latest.forEach(function (rev) {
+        var stars = '';
+        for (var i = 0; i < 5; i++) {
+            if (i < (rev.stars || 5)) {
+                stars += '<i class="fa-solid fa-star"></i> ';
+            } else {
+                stars += '<i class="fa-regular fa-star"></i> ';
+            }
+        }
+
+        var productTag = rev.product
+            ? '<span class="review-card-product">' + esc(rev.product) + '</span>'
+            : '';
+
+        var card = document.createElement('div');
+        card.className = 'review-card-home scroll-in';
+        card.innerHTML =
+            '<div class="review-card-top">' +
+                '<img class="review-card-av" src="' + esc(rev.avatar) + '" alt="" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'">' +
+                '<div>' +
+                    '<div class="review-card-name">' + esc(rev.username) + '</div>' +
+                    '<div class="review-card-stars">' + stars + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="review-card-text">' + esc(rev.text) + '</div>' +
+            productTag;
+
+        grid.appendChild(card);
+    });
+
+    // Riattiva scroll animations per le nuove card
+    initScrollAnimations();
+}
+
+
+// ===== AGGIORNAMENTO PERIODICO RECENSIONI =====
+async function refreshReviews() {
+    try {
+        var res = await fetch(BIN_URL, { headers: { 'X-Master-Key': API_KEY } });
+        if (!res.ok) return;
+        var data = (await res.json()).record;
+        renderHomeReviews(data.reviews || []);
+    } catch (e) {}
+}
+
+// Ogni 30 secondi ricarica le recensioni dal DB
+setInterval(refreshReviews, 30000);
+
+
 // ===== ANIMAZIONE NUMERI =====
 function animateNum(id, target) {
     var el = document.getElementById(id);
     if (!el) return;
-    var start = 0;
     var duration = 1200;
     var startTime = null;
 
     function step(timestamp) {
         if (!startTime) startTime = timestamp;
         var progress = Math.min((timestamp - startTime) / duration, 1);
-        // ease out
         var ease = 1 - Math.pow(1 - progress, 3);
         var current = Math.floor(ease * target);
         el.textContent = current.toLocaleString('it-IT');
@@ -179,7 +273,7 @@ if (burger && mobileMenu) {
 
 // ===== SCROLL ANIMATIONS =====
 function initScrollAnimations() {
-    var elements = document.querySelectorAll('.scroll-in');
+    var elements = document.querySelectorAll('.scroll-in:not(.visible)');
     if (!elements.length) return;
 
     var observer = new IntersectionObserver(function (entries) {
@@ -200,7 +294,20 @@ function initScrollAnimations() {
 }
 
 
+// ===== UTILITY =====
+function esc(s) {
+    var d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+}
+
+
 // ===== START =====
 initUser();
-loadSiteData();
+loadSiteData().then(function() {
+    // Primo heartbeat dopo che l'utente è caricato
+    sendHeartbeat();
+    // Prima lettura online
+    fetchOnlineCount();
+});
 initScrollAnimations();
