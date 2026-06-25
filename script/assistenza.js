@@ -60,11 +60,14 @@ function showUser(u) {
 }
 
 
-// ===== BURGER =====
-var burger = document.getElementById('burger');
-var mobileMenu = document.getElementById('mobileMenu');
-if (burger && mobileMenu) {
-    burger.addEventListener('click', function() {
+// ===== BURGER (ISOLATO PER FUNZIONARE SEMPRE) =====
+function initBurger() {
+    var burger = document.getElementById('burger');
+    var mobileMenu = document.getElementById('mobileMenu');
+    if (!burger || !mobileMenu) return;
+
+    burger.addEventListener('click', function(e) {
+        e.stopPropagation(); // Evita conflitti su mobile
         mobileMenu.classList.toggle('open');
         var s = burger.querySelectorAll('span');
         var o = mobileMenu.classList.contains('open');
@@ -72,14 +75,19 @@ if (burger && mobileMenu) {
         s[1].style.opacity = o ? '0' : '1';
         s[2].style.transform = o ? 'rotate(-45deg) translate(4px,-4px)' : '';
     });
+
     mobileMenu.querySelectorAll('a').forEach(function(a) {
         a.addEventListener('click', function() {
             mobileMenu.classList.remove('open');
-            burger.querySelectorAll('span').forEach(function(s) { s.style.transform=''; s.style.opacity='1'; });
+            var s = burger.querySelectorAll('span');
+            s[0].style.transform = '';
+            s[1].style.opacity = '1';
+            s[2].style.transform = '';
         });
     });
 }
 
 
 // ===== START =====
+initBurger(); // Lo faccio partire PRIMA del login, così da telefono funziona subito
 initUser();
