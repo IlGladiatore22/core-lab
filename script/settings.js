@@ -5,7 +5,7 @@ var SETTINGS_API_KEY = '$2a$10$qkZpapSrdLMpR4AnUmla1.9sAQsP1yExqViMJHxkzGZdj7ETM
 var SETTINGS_URL = 'https://api.jsonbin.io/v3/b/' + SETTINGS_BIN_ID + '/latest';
 
 var siteSettings = {
-    siteName: 'Core Lab',
+    siteName: 'Core Lab™',
     siteDesc: 'Prodotti per Roblox, fatti bene.',
     discordLink: ''
 };
